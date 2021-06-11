@@ -1,9 +1,18 @@
+import chalk from 'chalk';
+import chokidar from 'chokidar';
+import EventEmitter from 'events';
 import fs from 'fs';
+import http from 'http';
+import Koa from 'koa';
+import serveStatic from 'koa-static';
 import path from 'path';
 import pug from 'pug';
+import WebSocket from 'ws';
 import Yaml from 'yaml';
 
+import { clientSideDevScript } from './dev';
 import { RenderOptions } from './types';
+import { isFileExists, isRelativePath } from './util';
 
 const defaultTemplatesDir = path.resolve(__dirname, '../templates');
 
@@ -12,14 +21,19 @@ export interface WorkspaceConfig {
 }
 
 export class Workspace {
-    globalOptions: RenderOptions = {
+    events: EventEmitter = new EventEmitter();
+    renderOptions: RenderOptions = {
         title: '👻',
         description: '',
         charset: 'utf-8',
         lang: 'en',
         favicon: '/favicon.ico',
         themeColor: '#fff',
+        isProduction: process.env.NODE_ENV === 'production',
     };
+    wss: WebSocket.Server| null = null;
+    server: http.Server | null = null;
+    koa: Koa | null = null;
 
     constructor(public config: WorkspaceConfig) {}
 
@@ -44,27 +58,31 @@ export class Workspace {
     }
 
     async init() {
+        this.createDirs();
         this.readGlobalOptions();
     }
 
-    async startDev() {
+    async serve(port: number) {
         this.init();
-        const res = await this.renderTemplate('foo.pug', {
-            opts: this.globalOptions,
-        });
-        // console.log('res', res);
+        this.koa = this.createKoa();
+        this.server = this.koa.listen(port);
+        this.wss = this.createWebSocketServer(this.server);
+        this.watch();
+        console.info(`Hey there 👋`);
+        console.info(`Visit ${chalk.green('http://localhost:' + port)} and start hacking!`);
     }
 
-    async renderTemplate(template: string, data: any): Promise<string> {
-        template = this.resolveTemplate(template);
+    async renderTemplate(template: string, data: any, resolve: boolean = true): Promise<string> {
+        if (resolve) {
+            template = this.getTemplate(template);
+        }
         const res = pug.renderFile(template, {
             basedir: this.templatesDir,
             filename: template,
             plugins: [
                 {
                     resolve: (filename: string, source: string, _loadOptions: any) => {
-                        const file = this.resolveTemplate(filename, source);
-                        return file;
+                        return this.getTemplate(filename, source);
                     },
                 }
             ],
@@ -73,9 +91,18 @@ export class Workspace {
         return res;
     }
 
-    resolveTemplate(template: string, sourceFile: string = '') {
+    getTemplate(template: string, sourceFile: string = '') {
+        const file = this.resolveTemplate(template, sourceFile);
+        if (file == null) {
+            throw new Error(`Template not found: ${template}`);
+        }
+        return file;
+    }
+
+    // Note: resolution is synchronous, because Pug only supports it this way
+    resolveTemplate(template: string, sourceFile: string = ''): string | null {
         const filename = template.endsWith('.pug') ? template : template + '.pug';
-        const isRelative = this.isRelativePath(template);
+        const isRelative = isRelativePath(template);
         const fallbackFiles: string[] = [];
         if (isRelative && sourceFile) {
             const dir = path.dirname(sourceFile);
@@ -85,38 +112,97 @@ export class Workspace {
             fallbackFiles.push(path.join(defaultTemplatesDir, filename));
         }
         for (const file of fallbackFiles) {
-            if (this.isFileExists(file)) {
+            if (isFileExists(file)) {
                 return file;
             }
         }
-        throw new Error(`Template not found: ${template}`);
+        return null;
     }
 
-    protected isFileExists(file: string) {
-        try {
-            return fs.statSync(file).isFile();
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return false;
+    protected createKoa() {
+        const koa = new Koa();
+        koa.use((ctx, next) => {
+            if (ctx.url === '/') {
+                ctx.url = '/index';
             }
-            throw err;
-        }
+            return next();
+        });
+        koa.use((ctx, next) => this.serveRequest(ctx, next));
+        koa.use(serveStatic(this.staticDir));
+        return koa;
     }
 
-    protected isRelativePath(file: string) {
-        return /^\.+\//.test(file);
+    protected async serveRequest(ctx: Koa.Context, next: Koa.Next) {
+        switch (ctx.method) {
+            case 'GET': {
+                if (ctx.url === '/__dev__.js') {
+                    ctx.type = 'text/javascript';
+                    ctx.body = `(${clientSideDevScript.toString()})()`;
+                    return;
+                }
+                // Try templates/pages/*.pug
+                const template = this.resolveTemplate(path.join('pages', ctx.path));
+                if (template) {
+                    ctx.type = 'text/html';
+                    ctx.body = await this.renderTemplate(template, {
+                        opts: this.renderOptions
+                    }, false);
+                    return;
+                }
+                // TODO add pages support
+                break;
+            }
+        }
+        return next();
     }
 
     protected readGlobalOptions() {
         const file = this.optionsFile;
-        if (!this.isFileExists(file)) {
-            fs.writeFileSync(file, Yaml.stringify(this.globalOptions), 'utf-8');
+        if (!isFileExists(file)) {
+            fs.writeFileSync(file, Yaml.stringify(this.renderOptions), 'utf-8');
         }
         try {
             const text = fs.readFileSync(file, 'utf-8');
             const opts = Yaml.parse(text);
-            Object.assign(this.globalOptions, opts);
+            Object.assign(this.renderOptions, opts);
         } catch (err) { }
+    }
+
+    protected createDirs() {
+        const dirs = [
+            this.staticDir,
+            this.templatesDir,
+            this.pagesDir,
+            this.stylesheetsDir,
+        ];
+        for (const dir of dirs) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    }
+
+    protected watch() {
+        chokidar.watch([this.templatesDir, defaultTemplatesDir])
+            .on('change', file => {
+                console.info(chalk.yellow('watch'), 'template changed', file);
+                this.events.emit('watch', {
+                    type: 'templateChanged',
+                    file,
+                });
+            });
+    }
+
+    protected createWebSocketServer(server: http.Server) {
+        const wss = new WebSocket.Server({ server });
+        wss.on('connection', ws => {
+            this.events.addListener('watch', onWatchEvent);
+            ws.on('close', () => {
+                this.events.removeListener('watch', onWatchEvent);
+            });
+            function onWatchEvent(data: any) {
+                ws.send(JSON.stringify(data));
+            }
+        });
+        return wss;
     }
 
 }

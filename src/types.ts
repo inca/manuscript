@@ -5,5 +5,6 @@ export interface RenderOptions {
     description: string;
     charset: string;
     favicon: string;
+    isProduction: boolean;
     [key: string]: any;
 }

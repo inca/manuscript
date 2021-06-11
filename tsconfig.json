@@ -12,6 +12,7 @@
         "allowJs": true,
         "checkJs": false,
         "lib": [
+            "DOM",
             "ES2019"
         ],
 
