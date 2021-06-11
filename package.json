@@ -1,0 +1,33 @@
+{
+    "name": "@inca/manuscript",
+    "version": "1.0.0",
+    "author": "Boris Okunskiy",
+    "license": "ISC",
+    "scripts": {
+        "dev": "tsc -b -w",
+        "compile": "tsc -b",
+        "lint": "eslint --ext=.js,.ts,.vue --cache ."
+    },
+    "bin": {
+        "manuscript": "./cli.js"
+    },
+    "pre-commit": [
+        "lint"
+    ],
+    "dependencies": {
+        "@types/pug": "^2.0.4",
+        "@vue/compiler-sfc": "^3.1.1",
+        "commander": "^7.2.0",
+        "markdown-it": "^12.0.6",
+        "pug": "^3.0.2",
+        "vue": "^3.1.1",
+        "yaml": "^1.10.2"
+    },
+    "devDependencies": {
+        "@types/node": "^15.12.2",
+        "@ubio/eslint-config": "^1.1.2",
+        "eslint": "^7.28.0",
+        "pre-commit": "^1.2.2",
+        "typescript": "^4.3.2"
+    }
+}

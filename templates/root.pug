@@ -1,0 +1,26 @@
+doctype html
+html(lang=opts.lang)
+
+  head
+    block head
+        title= opts.title
+
+        block links
+        block favicon
+            link(rel="shortcut icon" href=opts.favicon)
+
+        block metaCharset
+            meta(charset=opts.charset)
+        block metaCharset
+            meta(name='description' content=opts.description)
+        block metaViewport
+            meta(name="viewport" content="width=device-width, initial-scale=1")
+        block metaThemeColor
+            meta(name="theme-color" content=opts.themeColor)
+            meta(name="apple-mobile-web-app-status-bar-style" content=opts.themeColor)
+        block meta
+
+  body
+    block body
+    if !opts.isProduction
+      script(defer src="/dev.js")
