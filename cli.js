@@ -15,9 +15,7 @@ program.command('dev')
     .option('-r, --root <root>', 'Root directory', process.cwd())
     .option('-p, --port <port>', 'Port', 5000)
     .action(opts => {
-        const workspace = new Workspace({
-            rootDir: opts.root,
-        });
+        const workspace = new Workspace(opts.root);
         workspace.serve(opts.port);
     })
     .parse();
