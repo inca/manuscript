@@ -145,7 +145,7 @@ export class Workspace {
                 if (template) {
                     ctx.type = 'text/html';
                     ctx.body = await this.renderTemplate(template, {
-                        opts: this.renderOptions
+                        opts: this.getRenderOptions()
                     }, false);
                     return;
                 }
@@ -154,6 +154,13 @@ export class Workspace {
             }
         }
         return next();
+    }
+
+    protected getRenderOptions(overrides: Partial<RenderOptions> = {}) {
+        return {
+            ...this.renderOptions,
+            ...overrides,
+        };
     }
 
     protected readGlobalOptions() {
@@ -188,6 +195,12 @@ export class Workspace {
                     type: 'templateChanged',
                     file,
                 });
+            });
+        chokidar.watch(this.optionsFile)
+            .on('change', () => {
+                console.info(chalk.yellow('watch'), 'options file changed');
+                this.readGlobalOptions();
+                this.events.emit('watch', { type: 'reloadNeeded' });
             });
     }
 

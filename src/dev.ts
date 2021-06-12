@@ -19,6 +19,7 @@ export function clientSideDevScript() {
                 case 'cssChanged':
                     return onCssChanged(payload.cssFile);
                 case 'templateChanged':
+                case 'reloadNeeded':
                     return location.reload();
             }
         };
