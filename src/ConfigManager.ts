@@ -7,7 +7,7 @@ import Yaml from 'yaml';
 
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { isFileExists } from './util';
+import { isFileExists, Link } from './util';
 
 export interface WorkspaceOptions {
     title: string;
@@ -17,8 +17,11 @@ export interface WorkspaceOptions {
     charset: string;
     favicon: string;
     isProduction: boolean;
-    cssLinks: string[];
+    cssUrls: string[];
     stylesheets: string[];
+    navbar: Link[];
+    logoImage: string;
+    logoTitle: string;
     [key: string]: any;
 }
 
@@ -103,13 +106,16 @@ export class ConfigManager {
     getDefaultOptions(): WorkspaceOptions {
         return {
             isProduction: process.env.NODE_ENV === 'production',
-            title: '👻',
+            title: 'YAW (Your Awesome Website)',
             description: '',
             charset: 'utf-8',
             lang: 'en',
             favicon: '/favicon.ico',
             themeColor: '#fff',
-            cssLinks: [],
+            cssUrls: [],
+            navbar: [],
+            logoImage: '/logo.png',
+            logoTitle: 'YAW',
             stylesheets: [
                 'index.css'
             ]

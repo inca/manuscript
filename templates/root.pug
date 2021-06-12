@@ -11,7 +11,7 @@ html(lang=opts.lang)
         block favicon
             link(rel="shortcut icon" href=opts.favicon)
         block stylesheets
-            for link in opts.cssLinks
+            for link in opts.cssUrls
                 link(rel="stylesheet" href=link)
             for filename in opts.stylesheets
                 link(rel="stylesheet" href=`/${filename}`)

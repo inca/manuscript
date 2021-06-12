@@ -1,9 +1,11 @@
-extends global
+extends @global
 
 block body
     .layout
         block header
-            include layout-header
-        block content
+            include @layout/header
+        .content
+            .content-container.container
+                block content
         block footer
-            include layout-footer
+            include @layout/footer

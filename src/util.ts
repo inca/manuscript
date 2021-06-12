@@ -1,9 +1,5 @@
 import fs from 'fs';
 
-export function isRelativePath(file: string) {
-    return /^\.+\//.test(file);
-}
-
 export function isFileExists(file: string) {
     try {
         return fs.statSync(file).isFile();
@@ -17,4 +13,9 @@ export function isFileExists(file: string) {
 
 export function clone<T>(data: T): T {
     return data == null ? null : JSON.parse(JSON.stringify(data));
+}
+
+export interface Link {
+    title: string;
+    href: string;
 }

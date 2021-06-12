@@ -31,6 +31,8 @@ export class StylesheetsManager {
     watch() {
         chokidar.watch(this.config.stylesheetsDir)
             .on('change', () => this.buildStylesheets());
+        // chokidar.watch(path.join(__dirname, '../stylesheets'))
+        // .on('change', () => this.buildStylesheets());
         chokidar.watch(`${this.config.distDir}/**/*.css`)
             .on('change', file => {
                 const cssFile = path.relative(this.config.distDir, file);

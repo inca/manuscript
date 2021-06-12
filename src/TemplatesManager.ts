@@ -7,7 +7,7 @@ import pug from 'pug';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { clone, isFileExists, isRelativePath } from './util';
+import { clone, isFileExists } from './util';
 
 const defaultTemplatesDir = path.resolve(__dirname, '../templates');
 
@@ -68,14 +68,15 @@ export class TemplateManager {
     // Note: resolution is synchronous, because Pug only supports it this way
     resolveTemplate(template: string, sourceFile: string = ''): string | null {
         const filename = template.endsWith('.pug') ? template : template + '.pug';
-        const isRelative = isRelativePath(template);
         const fallbackFiles: string[] = [];
-        if (isRelative && sourceFile) {
+        if (filename.startsWith('@')) {
+            fallbackFiles.push(path.join(this.config.templatesDir, filename.substring(1)));
+            fallbackFiles.push(path.join(defaultTemplatesDir, filename.substring(1)));
+        } else if (sourceFile) {
             const dir = path.dirname(sourceFile);
             fallbackFiles.push(path.resolve(dir, filename));
         } else {
             fallbackFiles.push(path.join(this.config.templatesDir, filename));
-            fallbackFiles.push(path.join(defaultTemplatesDir, filename));
         }
         for (const file of fallbackFiles) {
             if (isFileExists(file)) {
