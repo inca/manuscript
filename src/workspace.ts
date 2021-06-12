@@ -6,13 +6,18 @@ import http from 'http';
 import Koa from 'koa';
 import serveStatic from 'koa-static';
 import path from 'path';
+import PostCss from 'postcss';
 import pug from 'pug';
 import WebSocket from 'ws';
 import Yaml from 'yaml';
 
+import { getDefaultOptions } from './defaults';
 import { clientSideDevScript } from './dev';
-import { RenderOptions } from './types';
+import { WorkspaceOptions } from './types';
 import { isFileExists, isRelativePath } from './util';
+
+// eslint-disable-next-line import/no-commonjs
+const postCssPlugins = [require('postcss-import'), require('autoprefixer')];
 
 const defaultTemplatesDir = path.resolve(__dirname, '../templates');
 
@@ -22,23 +27,20 @@ export interface WorkspaceConfig {
 
 export class Workspace {
     events: EventEmitter = new EventEmitter();
-    renderOptions: RenderOptions = {
-        title: '👻',
-        description: '',
-        charset: 'utf-8',
-        lang: 'en',
-        favicon: '/favicon.ico',
-        themeColor: '#fff',
-        isProduction: process.env.NODE_ENV === 'production',
-    };
+    options: WorkspaceOptions = getDefaultOptions();
     wss: WebSocket.Server| null = null;
     server: http.Server | null = null;
     koa: Koa | null = null;
+    postcss = PostCss(postCssPlugins);
 
     constructor(public config: WorkspaceConfig) {}
 
     get staticDir() {
         return path.resolve(this.config.rootDir, 'static');
+    }
+
+    get distDir() {
+        return path.resolve(this.config.rootDir, 'dist');
     }
 
     get templatesDir() {
@@ -59,7 +61,7 @@ export class Workspace {
 
     async init() {
         this.createDirs();
-        this.readGlobalOptions();
+        this.readOptionsFile();
     }
 
     async serve(port: number) {
@@ -70,6 +72,7 @@ export class Workspace {
         this.watch();
         console.info(`Hey there 👋`);
         console.info(`Visit ${chalk.green('http://localhost:' + port)} and start hacking!`);
+        await this.buildStylesheets();
     }
 
     async renderTemplate(template: string, data: any, resolve: boolean = true): Promise<string> {
@@ -129,6 +132,7 @@ export class Workspace {
         });
         koa.use((ctx, next) => this.serveRequest(ctx, next));
         koa.use(serveStatic(this.staticDir));
+        koa.use(serveStatic(this.distDir));
         return koa;
     }
 
@@ -156,27 +160,31 @@ export class Workspace {
         return next();
     }
 
-    protected getRenderOptions(overrides: Partial<RenderOptions> = {}) {
+    protected getRenderOptions(overrides: Partial<WorkspaceOptions> = {}) {
         return {
-            ...this.renderOptions,
+            ...this.options,
             ...overrides,
         };
     }
 
-    protected readGlobalOptions() {
+    protected readOptionsFile() {
         const file = this.optionsFile;
         if (!isFileExists(file)) {
-            fs.writeFileSync(file, Yaml.stringify(this.renderOptions), 'utf-8');
+            fs.writeFileSync(file, Yaml.stringify(this.options), 'utf-8');
         }
         try {
             const text = fs.readFileSync(file, 'utf-8');
             const opts = Yaml.parse(text);
-            Object.assign(this.renderOptions, opts);
+            this.options = {
+                ...getDefaultOptions(),
+                ...opts,
+            };
         } catch (err) { }
     }
 
     protected createDirs() {
         const dirs = [
+            this.distDir,
             this.staticDir,
             this.templatesDir,
             this.pagesDir,
@@ -199,8 +207,19 @@ export class Workspace {
         chokidar.watch(this.optionsFile)
             .on('change', () => {
                 console.info(chalk.yellow('watch'), 'options file changed');
-                this.readGlobalOptions();
+                this.readOptionsFile();
                 this.events.emit('watch', { type: 'reloadNeeded' });
+            });
+        chokidar.watch(this.stylesheetsDir)
+            .on('change', () => this.buildStylesheets());
+        chokidar.watch(`${this.distDir}/**/*.css`)
+            .on('change', file => {
+                const cssFile = path.relative(this.distDir, file);
+                console.info(chalk.yellow('watch'), 'css changed');
+                this.events.emit('watch', {
+                    type: 'cssChanged',
+                    cssFile,
+                });
             });
     }
 
@@ -216,6 +235,23 @@ export class Workspace {
             }
         });
         return wss;
+    }
+
+    protected async buildStylesheets() {
+        const promises = this.options.stylesheets.map(_ => this.buildStylesheet(_));
+        await Promise.all(promises);
+    }
+
+    protected async buildStylesheet(filename: string) {
+        const srcFile = path.join(this.stylesheetsDir, filename);
+        const dstFile = path.join(this.distDir, filename);
+        const srcCss = await fs.promises.readFile(srcFile, 'utf-8');
+        const result = await this.postcss.process(srcCss, {
+            from: srcFile,
+            to: dstFile,
+        });
+        await fs.promises.writeFile(dstFile, result.css, 'utf-8');
+        console.info(chalk.green(`Built ${filename}`));
     }
 
 }

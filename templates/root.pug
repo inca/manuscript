@@ -10,11 +10,16 @@ html(lang=opts.lang)
         block links
         block favicon
             link(rel="shortcut icon" href=opts.favicon)
+        block stylesheets
+            for link in opts.cssLinks
+                link(rel="stylesheet" href=link)
+            for filename in opts.stylesheets
+                link(rel="stylesheet" href=`/${filename}`)
 
         block metaCharset
             meta(charset=opts.charset)
         block metaDescription
-            meta(name='description' content=opts.description)
+            meta(name="description" content=opts.description)
         block metaViewport
             meta(name="viewport" content="width=device-width, initial-scale=1")
         block metaThemeColor

@@ -1,4 +1,4 @@
-export interface RenderOptions {
+export interface WorkspaceOptions {
     title: string;
     themeColor: string;
     lang: string;
@@ -6,5 +6,7 @@ export interface RenderOptions {
     charset: string;
     favicon: string;
     isProduction: boolean;
+    cssLinks: string[];
+    stylesheets: string[];
     [key: string]: any;
 }
