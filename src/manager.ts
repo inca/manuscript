@@ -3,6 +3,7 @@ export const managerClasses = new Set<ManagerClass>();
 export interface ManagerService {
     init(): void | Promise<void>;
     watch(): void | Promise<void>;
+    build(): void | Promise<void>;
 }
 
 export interface ManagerClass {

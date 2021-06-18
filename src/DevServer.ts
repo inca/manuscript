@@ -58,7 +58,7 @@ export class DevServer {
                     return;
                 }
                 // Try templates/pages/*.pug
-                const template = this.templates.resolveTemplate(path.join('pages', ctx.path));
+                const template = this.templates.resolveTemplate(path.join('@pages', ctx.path));
                 if (template) {
                     ctx.type = 'text/html';
                     ctx.body = await this.templates.renderTemplate(template, {}, false);
@@ -107,6 +107,7 @@ function devClientScript() {
             switch (payload.type) {
                 case 'cssChanged':
                     return onCssChanged(payload.cssFile);
+                case 'scriptChanged':
                 case 'templateChanged':
                 case 'reloadNeeded':
                     return location.reload();
@@ -128,4 +129,5 @@ function devClientScript() {
             link.setAttribute('href', newHref);
         }
     }
+
 }

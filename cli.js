@@ -17,5 +17,16 @@ program.command('dev')
     .action(opts => {
         const workspace = new Workspace(opts.root);
         workspace.serve(opts.port);
-    })
-    .parse();
+    });
+
+program.command('build')
+    .description('Build all assets')
+    .option('-r, --root <root>', 'Root directory', process.cwd())
+    .action(opts => {
+        const workspace = new Workspace(opts.root, {
+            isProduction: true,
+        });
+        workspace.build();
+    });
+
+program.parse();

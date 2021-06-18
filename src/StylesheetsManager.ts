@@ -28,19 +28,16 @@ export class StylesheetsManager {
         await this.buildStylesheets();
     }
 
+    build() {}
+
     watch() {
         chokidar.watch(this.config.stylesheetsDir)
             .on('change', () => this.buildStylesheets());
-        // chokidar.watch(path.join(__dirname, '../stylesheets'))
-        // .on('change', () => this.buildStylesheets());
         chokidar.watch(`${this.config.distDir}/**/*.css`)
             .on('change', file => {
                 const cssFile = path.relative(this.config.distDir, file);
                 console.info(chalk.yellow('watch'), 'stylesheet changed', cssFile);
-                this.events.emit('watch', {
-                    type: 'cssChanged',
-                    cssFile,
-                });
+                this.events.emit('watch', { type: 'cssChanged', cssFile });
             });
     }
 
@@ -58,7 +55,7 @@ export class StylesheetsManager {
             to: dstFile,
         });
         await fs.promises.writeFile(dstFile, result.css, 'utf-8');
-        console.info(chalk.green(`Built ${filename}`));
+        console.info(`Built ${chalk.green(filename)}`);
     }
 
 }

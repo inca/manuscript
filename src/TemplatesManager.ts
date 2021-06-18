@@ -1,16 +1,40 @@
 import chalk from 'chalk';
 import chokidar from 'chokidar';
+import fs from 'fs';
+import glob from 'glob';
 import { inject, injectable } from 'inversify';
 import path from 'path';
 import pug from 'pug';
+import { promisify } from 'util';
 
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { clone, isFileExists } from './util';
 
+const globAsync = promisify(glob);
+
 const defaultTemplatesDir = path.resolve(__dirname, '../templates');
 
+/**
+ * Manages Pug template resolution, rendering and building template-based pages.
+ *
+ * Manuscript ships with a minimalistic layout, each of which can be overridden
+ * by copying a correspinding template to `$ROOT/templates` and editing it.
+ *
+ * This is made possible by special syntax inside `include` and `extends`:
+ * files starting with `@` are first looked up locally (i.e. in `$ROOT/templates`),
+ * falling back to predefined templates in this package if not found.
+ *
+ * For example `@layout/footer` will look for those files and uses the first one found:
+ *
+ *  - $ROOT/templates/layout/footer.pug
+ *  - $ROOT/node_modules/@inca/manuscript/templates/layout/footer.pug
+ *
+ * Templates under `templates/pages` are served and rendered as is.
+ * The layouts are composed in a way that allows for overriding each aspect using blocks.
+ * See `root.pug` and `layout.pug` for details.
+ */
 @injectable()
 @manager()
 export class TemplateManager {
@@ -22,8 +46,10 @@ export class TemplateManager {
         protected events: EventBus,
     ) {}
 
-    async init() {
-        // TODO add build templates
+    init() {}
+
+    async build() {
+        await this.buildTemplatePages();
     }
 
     watch() {
@@ -86,8 +112,22 @@ export class TemplateManager {
         return null;
     }
 
-    protected createRenderOptions(data: any) {
+    createRenderOptions(data: any) {
         return clone({ ...this.config.options, ...data });
+    }
+
+    async buildTemplatePages() {
+        const srcDir = path.join(this.config.templatesDir, 'pages');
+        const files = await globAsync('**/*.pug', { cwd: srcDir });
+        for (const filename of files) {
+            const srcFile = path.join(srcDir, filename);
+            const targetFile = path.join(this.config.distDir,
+                filename.replace(/\.pug$/gi, '.html'));
+            const html = await this.renderTemplate(srcFile, {}, false);
+            await fs.promises.mkdir(path.dirname(targetFile), { recursive: true });
+            await fs.promises.writeFile(targetFile, html, 'utf-8');
+            console.info(`Built`, chalk.green(filename));
+        }
     }
 
 }

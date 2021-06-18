@@ -29,5 +29,7 @@ html(lang=opts.lang)
 
   body
     block body
+    for script in opts.scripts
+        script(src=`/${script.replace(/\.ts$/g, '.js')}`)
     if !opts.isProduction
       script(defer src="/__dev__.js")

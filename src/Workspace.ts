@@ -2,21 +2,24 @@ import 'reflect-metadata';
 
 import { Container } from 'inversify';
 
-import { ConfigManager } from './ConfigManager';
+import { ConfigManager, WorkspaceOptions } from './ConfigManager';
 import { DevServer } from './DevServer';
 import { EventBus } from './EventBus';
 import { managerClasses, ManagerService } from './manager';
+import { ScriptsManager } from './ScriptsManager';
 import { StylesheetsManager } from './StylesheetsManager';
 import { TemplateManager } from './TemplatesManager';
 
 export class Workspace {
     container = new Container({ skipBaseClassChecks: true });
 
-    constructor(rootDir: string) {
+    constructor(rootDir: string, optionOverrides: Partial<WorkspaceOptions> = {}) {
         this.container.bind('rootDir').toConstantValue(rootDir);
+        this.container.bind('optionOverrides').toConstantValue(optionOverrides);
         this.container.bind(EventBus).toSelf().inSingletonScope();
         this.container.bind(ConfigManager).toSelf().inSingletonScope();
         this.container.bind(StylesheetsManager).toSelf().inSingletonScope();
+        this.container.bind(ScriptsManager).toSelf().inSingletonScope();
         this.container.bind(TemplateManager).toSelf().inSingletonScope();
         this.container.bind(DevServer).toSelf().inSingletonScope();
 
@@ -31,6 +34,10 @@ export class Workspace {
 
     async init() {
         await Promise.all(this.getManagers().map(mgr => mgr.init()));
+    }
+
+    async build() {
+        await Promise.all(this.getManagers().map(mgr => mgr.build()));
     }
 
     async watch() {
