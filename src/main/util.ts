@@ -16,11 +16,6 @@ export function clone<T>(data: T): T {
     return data == null ? null : JSON.parse(JSON.stringify(data));
 }
 
-export interface Link {
-    title: string;
-    href: string;
-}
-
 export function readFrontMatter(text: string): [string, any] {
     const data: any = {};
     const strippedText = text.trim().replace(/^---\s*\r?\n([\s\S]*)\r?\n---\s*\r?\n/, (_, frontMatterText) => {

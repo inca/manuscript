@@ -10,7 +10,8 @@ import Yaml from 'yaml';
 
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { isFileExists, Link } from './util';
+import { Link } from './types';
+import { isFileExists } from './util';
 
 const globAsync = promisify(glob);
 

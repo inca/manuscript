@@ -2,6 +2,7 @@ import { inject, injectable } from 'inversify';
 
 import { manager } from './manager';
 import { TemplateManager } from './TemplatesManager';
+import { Page } from './types';
 
 @manager()
 @injectable()
@@ -25,10 +26,4 @@ export class PagesManager {
         };
     }
 
-}
-
-export interface Page {
-    // Filename relative to pagesDir, without extension (e.g. pages/index.md has `index` id)
-    id: string;
-    title: string;
 }

@@ -14,7 +14,7 @@ import { TemplateManager } from './TemplatesManager';
 export class Workspace {
     container = new Container({ skipBaseClassChecks: true });
 
-    constructor(rootDir: string, optionOverrides: Partial<WorkspaceOptions> = {}) {
+    constructor(public rootDir: string, optionOverrides: Partial<WorkspaceOptions> = {}) {
         this.container.bind('rootDir').toConstantValue(rootDir);
         this.container.bind('optionOverrides').toConstantValue(optionOverrides);
         this.container.bind(ConfigManager).toSelf().inSingletonScope();
