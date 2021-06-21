@@ -3,18 +3,17 @@ import { inject, injectable } from 'inversify';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 import { VueLoaderPlugin } from 'vue-loader';
-import { Compiler, Configuration, EntryObject, Stats, webpack } from 'webpack';
+import { Compiler, Configuration, EntryObject, Stats, Watching, webpack } from 'webpack';
 
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
 
-// TODO restart watcher on changes to manifest.json
-// TODO loaders are not resolved properly
 @injectable()
 @manager()
 export class ScriptsManager {
     compiler: Compiler;
+    watcher: Watching | null = null;
 
     constructor(
         @inject(ConfigManager)
@@ -44,7 +43,7 @@ export class ScriptsManager {
     }
 
     watch() {
-        this.compiler.watch({
+        this.watcher = this.compiler.watch({
             ignored: ['**/node_modules']
         }, (err, stats) => {
             if (err) {
@@ -101,7 +100,7 @@ export class ScriptsManager {
             },
             resolveLoader: {
                 modules: [
-                    path.join(__dirname, '../node_modules'),
+                    path.join(__dirname, '../../node_modules'),
                     'node_modules',
                 ]
             },

@@ -3,7 +3,7 @@ const { Command } = require('commander');
 const fs = require('fs');
 const path = require('path');
 
-const { Workspace } = require('./out/workspace');
+const { Workspace } = require('./out/main/workspace');
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'));
 

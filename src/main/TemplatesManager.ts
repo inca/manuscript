@@ -14,7 +14,7 @@ import { clone, isFileExists } from './util';
 
 const globAsync = promisify(glob);
 
-const defaultTemplatesDir = path.resolve(__dirname, '../templates');
+const defaultTemplatesDir = path.resolve(__dirname, '../../templates');
 
 /**
  * Manages Pug template resolution, rendering and building template-based pages.

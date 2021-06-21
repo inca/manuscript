@@ -139,8 +139,8 @@ export class ConfigManager {
     }
 
     async copyResources() {
-        const resourcesDir = path.join(__dirname, '../resources');
-        const resources = await globAsync('*', { cwd: resourcesDir });
+        const resourcesDir = path.join(__dirname, '../../resources');
+        const resources = await globAsync('**/*', { cwd: resourcesDir });
         for (const filename of resources) {
             const sourceFile = path.join(resourcesDir, filename);
             const targetFile = path.join(this.rootDir, filename);
@@ -150,6 +150,7 @@ export class ConfigManager {
                 continue;
             }
             await copy(sourceFile, targetFile, { overwrite: false });
+            console.info('Created', chalk.green(filename));
         }
     }
 
