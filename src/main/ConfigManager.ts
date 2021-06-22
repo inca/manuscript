@@ -11,7 +11,7 @@ import Yaml from 'yaml';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { Link } from './types';
-import { isFileExists } from './util';
+import { clone, isFileExists } from './util';
 
 const globAsync = promisify(glob);
 
@@ -35,7 +35,7 @@ export interface WorkspaceOptions {
 @injectable()
 @manager()
 export class ConfigManager {
-    options: WorkspaceOptions = this.getDefaultOptions();
+    protected options: WorkspaceOptions = this.getDefaultOptions();
 
     constructor(
         @inject('rootDir')
@@ -87,6 +87,10 @@ export class ConfigManager {
 
     get optionsFile() {
         return path.resolve(this.rootDir, 'manuscript.yaml');
+    }
+
+    getOptions() {
+        return clone(this.options);
     }
 
     async readOptionsFile() {

@@ -42,7 +42,7 @@ export class StylesheetsManager {
     }
 
     async buildStylesheets() {
-        const promises = this.config.options.stylesheets.map(_ => this.buildStylesheet(_));
+        const promises = this.config.getOptions().stylesheets.map(_ => this.buildStylesheet(_));
         await Promise.all(promises);
     }
 

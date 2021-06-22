@@ -8,6 +8,7 @@ import ws from 'ws';
 
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
+import { PagesManager } from './PagesManager';
 import { TemplateManager } from './TemplatesManager';
 
 @injectable()
@@ -23,6 +24,8 @@ export class DevServer {
         protected events: EventBus,
         @inject(TemplateManager)
         protected templates: TemplateManager,
+        @inject(PagesManager)
+        protected pages: PagesManager,
     ) {
 
     }
@@ -46,6 +49,7 @@ export class DevServer {
         koa.use((ctx, next) => this.serveRequest(ctx, next));
         koa.use(serveStatic(this.config.staticDir));
         koa.use(serveStatic(this.config.distDir));
+        // TODO render 404
         return koa;
     }
 
@@ -61,10 +65,15 @@ export class DevServer {
                 const template = this.templates.resolveTemplate(path.join('@pages', ctx.path));
                 if (template) {
                     ctx.type = 'text/html';
-                    ctx.body = await this.templates.renderTemplate(template, {}, false);
+                    ctx.body = await this.templates.renderFile(template);
                     return;
                 }
-                // TODO add pages support
+                const renderedPage = await this.pages.renderPage(ctx.path);
+                if (renderedPage) {
+                    ctx.type = 'text/html';
+                    ctx.body = renderedPage;
+                    return;
+                }
                 break;
             }
         }

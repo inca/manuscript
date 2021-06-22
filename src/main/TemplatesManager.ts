@@ -10,7 +10,7 @@ import { promisify } from 'util';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { clone, isFileExists } from './util';
+import { isFileExists } from './util';
 
 const globAsync = promisify(glob);
 
@@ -63,14 +63,12 @@ export class TemplateManager {
             });
     }
 
-    async renderTemplate(template: string, data: any, resolve: boolean = true): Promise<string> {
-        if (resolve) {
-            template = this.getTemplate(template);
-        }
-        const opts = this.createRenderOptions(data);
-        const res = pug.renderFile(template, {
+    async renderFile(file: string, data: any = {}): Promise<string> {
+        const { opts: optOverrides, ...restData } = data;
+        const opts = { ...this.config.getOptions(), ...optOverrides };
+        const res = pug.renderFile(file, {
             basedir: this.config.templatesDir,
-            filename: template,
+            filename: file,
             plugins: [
                 {
                     resolve: (filename: string, source: string, _loadOptions: any) => {
@@ -79,6 +77,7 @@ export class TemplateManager {
                 }
             ],
             opts,
+            ...restData,
         });
         return res;
     }
@@ -112,10 +111,6 @@ export class TemplateManager {
         return null;
     }
 
-    createRenderOptions(data: any) {
-        return clone({ ...this.config.options, ...data });
-    }
-
     async buildTemplatePages() {
         const srcDir = path.join(this.config.templatesDir, 'pages');
         const files = await globAsync('**/*.pug', { cwd: srcDir });
@@ -123,7 +118,7 @@ export class TemplateManager {
             const srcFile = path.join(srcDir, filename);
             const targetFile = path.join(this.config.distDir,
                 filename.replace(/\.pug$/gi, '.html'));
-            const html = await this.renderTemplate(srcFile, {}, false);
+            const html = await this.renderFile(srcFile);
             await fs.promises.mkdir(path.dirname(targetFile), { recursive: true });
             await fs.promises.writeFile(targetFile, html, 'utf-8');
             console.info(`Built`, chalk.green(filename));

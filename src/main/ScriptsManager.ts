@@ -82,7 +82,7 @@ export class ScriptsManager {
     }
 
     protected buildWebpackConfig(): Configuration {
-        const opts = this.config.options;
+        const opts = this.config.getOptions();
         return {
             mode: opts.isProduction ? 'production' : 'development',
             devtool: opts.isProduction ? false : 'cheap-source-map',
@@ -146,7 +146,7 @@ export class ScriptsManager {
 
     protected buildWebpackEntry(): EntryObject {
         const res: EntryObject = {};
-        for (const scriptFile of this.config.options.scripts) {
+        for (const scriptFile of this.config.getOptions().scripts) {
             const { dir, ext, name } = path.parse(scriptFile);
             res[name] = ['./scripts', dir, name + ext].filter(Boolean).join('/');
         }
