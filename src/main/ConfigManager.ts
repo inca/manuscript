@@ -32,6 +32,9 @@ export interface WorkspaceOptions {
     [key: string]: any;
 }
 
+/**
+ * Reads config options from `manuscript.yaml` and manages default directory layout.
+ */
 @injectable()
 @manager()
 export class ConfigManager {
@@ -40,6 +43,8 @@ export class ConfigManager {
     constructor(
         @inject('rootDir')
         public rootDir: string,
+        @inject('optionOverrides')
+        protected optionOverrides: WorkspaceOptions,
         @inject(EventBus)
         protected events: EventBus,
     ) {}
@@ -104,6 +109,7 @@ export class ConfigManager {
             this.options = {
                 ...this.getDefaultOptions(),
                 ...opts,
+                ...this.optionOverrides,
             };
         } catch (err) { }
     }

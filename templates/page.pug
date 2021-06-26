@@ -1,5 +1,8 @@
 extends @layout.pug
 
+block append meta
+    meta(name="pageId" content=page.id)
+
 block content
     .page
         .page-container.container

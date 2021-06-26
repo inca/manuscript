@@ -8,9 +8,13 @@ import { EventBus } from './EventBus';
 import { managerClasses, ManagerService } from './manager';
 import { PagesManager } from './PagesManager';
 import { ScriptsManager } from './ScriptsManager';
+import { StaticManager } from './StaticManager';
 import { StylesheetsManager } from './StylesheetsManager';
 import { TemplateManager } from './TemplatesManager';
 
+/**
+ * The composition root.
+ */
 export class Workspace {
     container = new Container({ skipBaseClassChecks: true });
 
@@ -22,6 +26,7 @@ export class Workspace {
         this.container.bind(EventBus).toSelf().inSingletonScope();
         this.container.bind(PagesManager).toSelf().inSingletonScope();
         this.container.bind(ScriptsManager).toSelf().inSingletonScope();
+        this.container.bind(StaticManager).toSelf().inSingletonScope();
         this.container.bind(StylesheetsManager).toSelf().inSingletonScope();
         this.container.bind(TemplateManager).toSelf().inSingletonScope();
 
@@ -34,23 +39,28 @@ export class Workspace {
         return this.container.getAll<ManagerService>('manager');
     }
 
-    async init() {
-        await Promise.all(this.getManagers().map(mgr => mgr.init()));
-    }
-
     async build() {
-        await Promise.all(this.getManagers().map(mgr => mgr.build()));
-    }
-
-    async watch() {
-        await Promise.all(this.getManagers().map(mgr => mgr.watch()));
+        await this.runInit();
+        await this.runBuild();
     }
 
     async serve(port: number) {
-        await this.init();
-        await this.watch();
+        await this.runInit();
+        await this.runWatch();
         const devServer = this.container.get(DevServer);
         await devServer.serve(port);
+    }
+
+    protected async runInit() {
+        await Promise.all(this.getManagers().map(mgr => mgr.init()));
+    }
+
+    protected async runBuild() {
+        await Promise.all(this.getManagers().map(mgr => mgr.build()));
+    }
+
+    protected async runWatch() {
+        await Promise.all(this.getManagers().map(mgr => mgr.watch()));
     }
 
 }

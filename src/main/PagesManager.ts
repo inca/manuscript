@@ -1,13 +1,21 @@
+import chalk from 'chalk';
+import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
+import glob from 'glob';
 import { inject, injectable } from 'inversify';
 import Markdown from 'markdown-it';
 import path from 'path';
+import { promisify } from 'util';
+import Yaml from 'yaml';
 
 import { ConfigManager } from './ConfigManager';
+import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { TemplateManager } from './TemplatesManager';
 import { Page } from './types';
 import { readFrontMatter } from './util';
+
+const globAsync = promisify(glob);
 
 @manager()
 @injectable()
@@ -22,6 +30,8 @@ export class PagesManager {
         protected config: ConfigManager,
         @inject(TemplateManager)
         protected templates: TemplateManager,
+        @inject(EventBus)
+        protected events: EventBus,
     ) {
         this.md = new Markdown({
             html: true,
@@ -32,15 +42,31 @@ export class PagesManager {
 
     init() {}
 
-    build() {}
-
-    watch() {}
-
-    async renderPage(id: string): Promise<string | null> {
-        const page = await this.getPage(id);
-        if (!page) {
-            return null;
+    async build() {
+        const allPages = await this.getAllPages();
+        for (const page of allPages) {
+            const html = await this.renderPage(page);
+            await fs.writeFile(page.targetFile, html);
+            console.info(chalk.green('Build page'), page.id);
         }
+    }
+
+    watch() {
+        chokidar.watch(`${this.config.pagesDir}/**/index.yaml`)
+            .on('change', file => {
+                this.optionsFileCache.delete(file);
+                console.info(chalk.yellow('watch'), 'page options changed', file);
+                this.events.emit('watch', { type: 'reloadNeeded' });
+            });
+        chokidar.watch(`${this.config.pagesDir}/**/*.md`)
+            .on('change', file => {
+                const pageId = this.normalizeId(path.relative(this.config.pagesDir, file));
+                console.info(chalk.yellow('watch'), 'page changed', pageId);
+                this.events.emit('watch', { type: 'pageChanged', pageId });
+            });
+    }
+
+    async renderPage(page: Page): Promise<string> {
         const pageTemplate = this.templates.resolveTemplate('@page.pug')!;
         return await this.templates.renderFile(pageTemplate, {
             opts: page.opts,
@@ -48,20 +74,30 @@ export class PagesManager {
         });
     }
 
+    async getAllPages(): Promise<Page[]> {
+        const files = await globAsync('**/*.md', { cwd: this.config.pagesDir });
+        const promises = files.map(f => this.getPage(f));
+        return (await Promise.all(promises)).filter((page): page is Page => page != null);
+    }
+
     async getPage(id: string): Promise<Page | null> {
         try {
             id = this.normalizeId(id);
-            const file = path.join(this.config.pagesDir, id + '.md');
-            // TODO read options file
-            const originalText = await fs.readFile(file, 'utf-8');
+            const sourceFile = path.join(this.config.pagesDir, id + '.md');
+            const targetFile = path.join(this.config.distDir, id + '.html');
+            const baseOpts = await this.readOptions(id);
+            const originalText = await fs.readFile(sourceFile, 'utf-8');
             const [text, frontMatterOpts] = readFrontMatter(originalText);
             const opts = {
+                ...baseOpts,
                 ...frontMatterOpts,
             };
             const html = this.md.render(text);
             return {
                 id,
                 title: '', // TODO infer title
+                sourceFile,
+                targetFile,
                 text,
                 html,
                 opts,
@@ -71,6 +107,26 @@ export class PagesManager {
                 return null;
             }
             throw err;
+        }
+    }
+
+    async readOptions(id: string) {
+        const dir = path.dirname(path.join(this.config.pagesDir, id));
+        const optionsFile = path.join(dir, 'index.yaml');
+        const cached = this.optionsFileCache.get(optionsFile);
+        if (cached) {
+            return cached;
+        }
+        try {
+            const content = await fs.readFile(optionsFile, 'utf-8');
+            const opts = Yaml.parse(content);
+            this.optionsFileCache.set(optionsFile, opts);
+            return opts;
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                console.warn(`Could not read ${optionsFile}`, err.message);
+            }
+            return {};
         }
     }
 

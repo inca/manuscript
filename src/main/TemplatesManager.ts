@@ -121,7 +121,7 @@ export class TemplateManager {
             const html = await this.renderFile(srcFile);
             await fs.promises.mkdir(path.dirname(targetFile), { recursive: true });
             await fs.promises.writeFile(targetFile, html, 'utf-8');
-            console.info(`Built`, chalk.green(filename));
+            console.info('Built template page', chalk.green(filename));
         }
     }
 

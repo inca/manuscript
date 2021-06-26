@@ -77,7 +77,7 @@ export class ScriptsManager {
             }
         }
         for (const asset of info.assets ?? []) {
-            console.info(`Built ${chalk.green(asset.name)}`);
+            console.info('Built asset', chalk.green(asset.name));
         }
     }
 

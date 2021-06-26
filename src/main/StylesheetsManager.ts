@@ -12,6 +12,9 @@ import { manager } from './manager';
 // eslint-disable-next-line import/no-commonjs
 const postCssPlugins = [require('postcss-import'), require('autoprefixer')];
 
+/**
+ * Compiles/watches stylesheets using PostCSS.
+ */
 @injectable()
 @manager()
 export class StylesheetsManager {
@@ -55,7 +58,7 @@ export class StylesheetsManager {
             to: dstFile,
         });
         await fs.promises.writeFile(dstFile, result.css, 'utf-8');
-        console.info(`Built ${chalk.green(filename)}`);
+        console.info('Built stylesheet', chalk.green(filename));
     }
 
 }

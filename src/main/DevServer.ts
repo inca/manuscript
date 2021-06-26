@@ -11,6 +11,13 @@ import { EventBus } from './EventBus';
 import { PagesManager } from './PagesManager';
 import { TemplateManager } from './TemplatesManager';
 
+/**
+ * An http server for development.
+ *
+ * This mimics the website behaviour when it's fully built,
+ * but doesn't actually involve building it entirely.
+ * Instead it only serves the requested content on demand.
+ */
 @injectable()
 export class DevServer {
     wss: ws.Server | null = null;
@@ -61,17 +68,22 @@ export class DevServer {
                     ctx.body = `(${devClientScript.toString()})()`;
                     return;
                 }
-                // Try templates/pages/*.pug
+                // Try templates/pages/**/*.pug
                 const template = this.templates.resolveTemplate(path.join('@pages', ctx.path));
                 if (template) {
                     ctx.type = 'text/html';
                     ctx.body = await this.templates.renderFile(template);
                     return;
                 }
-                const renderedPage = await this.pages.renderPage(ctx.path);
-                if (renderedPage) {
+                // Try pages/**/*.md
+                const page = await this.pages.getPage(ctx.path);
+                if (!page) {
+                    return next();
+                }
+                const html = await this.pages.renderPage(page);
+                if (html) {
                     ctx.type = 'text/html';
-                    ctx.body = renderedPage;
+                    ctx.body = html;
                     return;
                 }
                 break;
@@ -120,6 +132,8 @@ function devClientScript() {
                 case 'templateChanged':
                 case 'reloadNeeded':
                     return location.reload();
+                case 'pageChanged':
+                    return onPageChanged(payload.pageId);
             }
         };
 
@@ -136,6 +150,13 @@ function devClientScript() {
         if (link) {
             const newHref = link.getAttribute('href')?.replace(/\?.*/, '') + '?' + Date.now();
             link.setAttribute('href', newHref);
+        }
+    }
+
+    function onPageChanged(pageId: string) {
+        const meta = document.querySelector(`meta[name="pageId"][content="${pageId}"]`);
+        if (meta) {
+            location.reload();
         }
     }
 

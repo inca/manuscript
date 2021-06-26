@@ -16,16 +16,16 @@ html(lang=opts.lang)
             for filename in opts.stylesheets
                 link(rel="stylesheet" href=`/${filename}`)
 
-        block metaCharset
-            meta(charset=opts.charset)
-        block metaDescription
-            meta(name="description" content=opts.description)
-        block metaViewport
-            meta(name="viewport" content="width=device-width, initial-scale=1")
-        block metaThemeColor
-            meta(name="theme-color" content=opts.themeColor)
-            meta(name="apple-mobile-web-app-status-bar-style" content=opts.themeColor)
         block meta
+            block metaCharset
+                meta(charset=opts.charset)
+            block metaDescription
+                meta(name="description" content=opts.description)
+            block metaViewport
+                meta(name="viewport" content="width=device-width, initial-scale=1")
+            block metaThemeColor
+                meta(name="theme-color" content=opts.themeColor)
+                meta(name="apple-mobile-web-app-status-bar-style" content=opts.themeColor)
 
   body
     block body
