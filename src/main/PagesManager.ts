@@ -13,7 +13,7 @@ import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { TemplateManager } from './TemplatesManager';
 import { Page } from './types';
-import { extractHeadings, readFrontMatter } from './util';
+import { extractHeadings, isFileExists, readFrontMatter } from './util';
 
 const globAsync = promisify(glob);
 
@@ -84,40 +84,50 @@ export class PagesManager {
     }
 
     async getPage(id: string): Promise<Page | null> {
-        try {
-            id = this.normalizeId(id);
-            const sourceFile = path.join(this.config.pagesDir, id + '.md');
-            const targetFile = path.join(this.config.distDir, id + '.html');
-            const baseOpts = await this.readOptions(id);
-            const originalText = await fs.readFile(sourceFile, 'utf-8');
-            const [text, frontMatterOpts] = readFrontMatter(originalText);
-            const opts = {
-                ...baseOpts,
-                ...frontMatterOpts,
-            };
-            const html = this.md.render(text);
-            const headings = extractHeadings(html);
-            const title = headings[0]?.text;
-            return {
-                id,
-                title,
-                sourceFile,
-                targetFile,
-                text,
-                html,
-                headings,
-                opts,
-            };
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return null;
-            }
-            throw err;
+        id = this.normalizeId(id);
+        const sourceFile = await this.getSourceFile(id);
+        if (!sourceFile) {
+            return null;
         }
+        const targetFile = path.join(this.config.distDir, id + '.html');
+        const baseOpts = await this.readOptions(sourceFile);
+        const originalText = await fs.readFile(sourceFile, 'utf-8');
+        const [text, frontMatterOpts] = readFrontMatter(originalText);
+        const opts = {
+            ...baseOpts,
+            ...frontMatterOpts,
+        };
+        const html = this.md.render(text);
+        const headings = extractHeadings(html);
+        const title = headings[0]?.text;
+        return {
+            id,
+            title,
+            sourceFile,
+            targetFile,
+            text,
+            html,
+            headings,
+            opts,
+        };
     }
 
-    async readOptions(id: string) {
-        const dir = path.dirname(path.join(this.config.pagesDir, id));
+    protected async getSourceFile(id: string) {
+        const files = [
+            path.join(this.config.pagesDir, id + '.md'),
+            path.join(this.config.pagesDir, id, 'index.md'),
+        ];
+        for (const file of files) {
+            const exists = await isFileExists(file);
+            if (exists) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    protected async readOptions(srcFile: string) {
+        const dir = path.dirname(srcFile);
         const optionsFile = path.join(dir, 'index.yaml');
         const cached = this.optionsFileCache.get(optionsFile);
         if (cached) {
@@ -140,7 +150,8 @@ export class PagesManager {
         return id
             .replace(/\.(md|html?)$/gi, '')
             .replace(/^\/+/, '')
-            .replace(/\/+$/, '');
+            .replace(/\/+$/, '')
+            .replace(/\/index/gi, '');
     }
 
 }

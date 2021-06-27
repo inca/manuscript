@@ -10,7 +10,7 @@ import { promisify } from 'util';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { isFileExists } from './util';
+import { isFileExistsSync } from './util';
 
 const globAsync = promisify(glob);
 
@@ -104,7 +104,7 @@ export class TemplateManager {
             fallbackFiles.push(path.join(this.config.templatesDir, filename));
         }
         for (const file of fallbackFiles) {
-            if (isFileExists(file)) {
+            if (isFileExistsSync(file)) {
                 return file;
             }
         }

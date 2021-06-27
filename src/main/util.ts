@@ -4,7 +4,7 @@ import Yaml from 'yaml';
 
 import { Heading } from './types';
 
-export function isFileExists(file: string) {
+export function isFileExistsSync(file: string) {
     try {
         return fs.statSync(file).isFile();
     } catch (err) {
@@ -13,6 +13,16 @@ export function isFileExists(file: string) {
         }
         throw err;
     }
+}
+
+export async function isFileExists(file: string) {
+    return fs.promises.stat(file)
+        .then(_ => _.isFile(), err => {
+            if (err.code === 'ENOENT') {
+                return false;
+            }
+            throw err;
+        });
 }
 
 export function clone<T>(data: T): T {

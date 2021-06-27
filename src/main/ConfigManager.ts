@@ -11,7 +11,7 @@ import Yaml from 'yaml';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { Link } from './types';
-import { clone, isFileExists } from './util';
+import { clone, isFileExistsSync } from './util';
 
 const globAsync = promisify(glob);
 
@@ -103,7 +103,7 @@ export class ConfigManager {
 
     async readOptionsFile() {
         const file = this.optionsFile;
-        if (!isFileExists(file)) {
+        if (!isFileExistsSync(file)) {
             await fs.promises.writeFile(file, Yaml.stringify(this.options), 'utf-8');
         }
         try {
