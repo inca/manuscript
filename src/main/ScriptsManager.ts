@@ -107,7 +107,16 @@ export class ScriptsManager {
             module: {
                 rules: [
                     {
-                        test: /\.(png|svg)$/,
+                        resourceQuery: /raw/,
+                        type: 'asset/source',
+                    },
+                    {
+                        resourceQuery: /inline/,
+                        type: 'asset/inline',
+                    },
+                    {
+                        test: /\.(png|jpe?g|svg)$/,
+                        resourceQuery: { not: [/raw/, /inline/] },
                         type: 'asset/resource'
                     },
                     {
