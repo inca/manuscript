@@ -5,7 +5,7 @@ html(lang=opts.lang)
 
   head
     block head
-        title= opts.title
+        title= [opts.title, opts.siteTitle].filter(Boolean).join(opts.titleDelimiter)
 
         block links
         block favicon

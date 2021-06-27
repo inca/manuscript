@@ -4,6 +4,11 @@ block append meta
     meta(name="pageId" content=page.id)
 
 block content
-    .page
-        .page-container.container
-            != page.html
+    .page(class=opts.pageClass)
+        if (opts.sidenav && opts.sidenav.length)
+            .page-sidenav
+                for item in opts.sidenav
+                    a.page-sidenav-link(href=item.href)= item.title
+        .page-content
+            block pageContent
+                != page.html

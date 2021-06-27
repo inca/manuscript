@@ -13,7 +13,7 @@ import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { TemplateManager } from './TemplatesManager';
 import { Page } from './types';
-import { readFrontMatter } from './util';
+import { extractHeadings, readFrontMatter } from './util';
 
 const globAsync = promisify(glob);
 
@@ -38,6 +38,9 @@ export class PagesManager {
             linkify: true,
             typographer: true,
         });
+        for (const customBlock of config.getOptions().customBlocks) {
+            this.md.use(require('markdown-it-container'), customBlock);
+        }
     }
 
     init() {}
@@ -47,7 +50,7 @@ export class PagesManager {
         for (const page of allPages) {
             const html = await this.renderPage(page);
             await fs.writeFile(page.targetFile, html);
-            console.info(chalk.green('Build page'), page.id);
+            console.info('Built page', chalk.green(page.id));
         }
     }
 
@@ -69,7 +72,7 @@ export class PagesManager {
     async renderPage(page: Page): Promise<string> {
         const pageTemplate = this.templates.resolveTemplate('@page.pug')!;
         return await this.templates.renderFile(pageTemplate, {
-            opts: page.opts,
+            opts: { ...page.opts, title: page.title },
             page,
         });
     }
@@ -93,13 +96,16 @@ export class PagesManager {
                 ...frontMatterOpts,
             };
             const html = this.md.render(text);
+            const headings = extractHeadings(html);
+            const title = headings[0]?.text;
             return {
                 id,
-                title: '', // TODO infer title
+                title,
                 sourceFile,
                 targetFile,
                 text,
                 html,
+                headings,
                 opts,
             };
         } catch (err) {

@@ -1,5 +1,8 @@
+import cheerio from 'cheerio';
 import fs from 'fs';
 import Yaml from 'yaml';
+
+import { Heading } from './types';
 
 export function isFileExists(file: string) {
     try {
@@ -30,4 +33,22 @@ export function readFrontMatter(text: string): [string, any] {
         return '';
     });
     return [strippedText, data];
+}
+
+export function extractHeadings(html: string): Heading[] {
+    const result: Heading[] = [];
+    const $ = cheerio.load(html);
+    const headings = $('h1, h2, h3, h4, h5, h6');
+    for (const h of headings) {
+        const level = Number(h.tagName.replace(/[^0-9]/, ''));
+        if (isNaN(level)) {
+            continue;
+        }
+        const text = $(h).text();
+        result.push({
+            level,
+            text,
+        });
+    }
+    return result;
 }

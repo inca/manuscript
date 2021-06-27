@@ -16,7 +16,8 @@ import { clone, isFileExists } from './util';
 const globAsync = promisify(glob);
 
 export interface WorkspaceOptions {
-    title: string;
+    siteTitle: string;
+    titleDelimiter: string;
     themeColor: string;
     lang: string;
     description: string;
@@ -29,6 +30,8 @@ export interface WorkspaceOptions {
     navbar: Link[];
     logoImage: string;
     logoTitle: string;
+    title?: string;
+    customBlocks: string[];
     [key: string]: any;
 }
 
@@ -130,7 +133,8 @@ export class ConfigManager {
     getDefaultOptions(): WorkspaceOptions {
         return {
             isProduction: process.env.NODE_ENV === 'production',
-            title: 'My Awesome Website',
+            siteTitle: 'My Awesome Website',
+            titleDelimiter: ' · ',
             description: '',
             charset: 'utf-8',
             lang: 'en',
@@ -145,6 +149,13 @@ export class ConfigManager {
             ],
             scripts: [
                 'index.ts'
+            ],
+            customBlocks: [
+                'warning',
+                'kicker',
+                'sidenote',
+                'tip',
+                'btw',
             ]
         };
     }

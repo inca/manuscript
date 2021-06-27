@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
 import { inject, injectable } from 'inversify';
@@ -6,6 +7,7 @@ import path from 'path';
 import { promisify } from 'util';
 
 import { ConfigManager } from './ConfigManager';
+import { EventBus } from './EventBus';
 import { manager } from './manager';
 
 const globAsync = promisify(glob);
@@ -20,9 +22,9 @@ export class StaticManager {
     constructor(
         @inject(ConfigManager)
         protected config: ConfigManager,
-    ) {
-
-    }
+        @inject(EventBus)
+        protected events: EventBus,
+    ) {}
 
     init() {}
 
@@ -30,7 +32,13 @@ export class StaticManager {
         return this.copyStaticFiles();
     }
 
-    watch() {}
+    watch() {
+        chokidar.watch(`${this.config.staticDir}/**/*`)
+            .on('change', file => {
+                console.info(chalk.yellow('watch'), 'static file changed', file);
+                this.events.emit('watch', { type: 'reloadNeeded' });
+            });
+    }
 
     async copyStaticFiles() {
         const files = await globAsync('**/*', { cwd: this.config.staticDir });
