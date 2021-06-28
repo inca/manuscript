@@ -10,7 +10,7 @@ import Yaml from 'yaml';
 
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { Link } from './types';
+import { Link, ScriptEntry, StylesheetEntry } from './types';
 import { clone, isFileExistsSync } from './util';
 
 const globAsync = promisify(glob);
@@ -25,8 +25,8 @@ export interface WorkspaceOptions {
     favicon: string;
     isProduction: boolean;
     cssUrls: string[];
-    stylesheets: string[];
-    scripts: string[];
+    stylesheets: StylesheetEntry[];
+    scripts: ScriptEntry[];
     navbar: Link[];
     logoImage: string;
     logoTitle: string;
@@ -98,10 +98,10 @@ export class ConfigManager {
     }
 
     getOptions() {
-        return clone(this.options);
+        return this.normalizeOptions(this.options);
     }
 
-    async readOptionsFile() {
+    protected async readOptionsFile() {
         const file = this.optionsFile;
         if (!isFileExistsSync(file)) {
             await fs.promises.writeFile(file, Yaml.stringify(this.options), 'utf-8');
@@ -117,7 +117,7 @@ export class ConfigManager {
         } catch (err) { }
     }
 
-    async createDirs() {
+    protected async createDirs() {
         const dirs = [
             this.distDir,
             this.staticDir,
@@ -130,7 +130,7 @@ export class ConfigManager {
         }
     }
 
-    getDefaultOptions(): WorkspaceOptions {
+    protected getDefaultOptions(): WorkspaceOptions {
         return {
             isProduction: process.env.NODE_ENV === 'production',
             siteTitle: 'My Awesome Website',
@@ -145,22 +145,16 @@ export class ConfigManager {
             logoImage: '/logo.png',
             logoTitle: 'My Awesome Website',
             stylesheets: [
-                'index.css'
+                { name: 'index.css' },
             ],
             scripts: [
-                'index.ts'
+                { name: 'index.ts' },
             ],
-            customBlocks: [
-                'warning',
-                'kicker',
-                'sidenote',
-                'tip',
-                'btw',
-            ]
+            customBlocks: []
         };
     }
 
-    async copyResources() {
+    protected async copyResources() {
         const resourcesDir = path.join(__dirname, '../../resources');
         const resources = await globAsync('**/*', { cwd: resourcesDir });
         for (const filename of resources) {
@@ -174,6 +168,19 @@ export class ConfigManager {
             await copy(sourceFile, targetFile, { overwrite: false });
             console.info('Created', chalk.green(filename));
         }
+    }
+
+    protected normalizeOptions(options: WorkspaceOptions): WorkspaceOptions {
+        const opts = clone(options);
+        for (const entry of opts.scripts) {
+            entry.name = entry.name.replace(/\.(ts|js)$/gi, '');
+            entry.source = entry.source ?? entry.name + '.ts';
+        }
+        for (const entry of opts.stylesheets) {
+            entry.name = entry.name.replace(/\.css$/gi, '');
+            entry.source = entry.source ?? entry.name + '.css';
+        }
+        return opts;
     }
 
 }

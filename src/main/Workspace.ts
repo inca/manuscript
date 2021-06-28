@@ -52,7 +52,10 @@ export class Workspace {
     }
 
     protected async runInit() {
-        await Promise.all(this.getManagers().map(mgr => mgr.init()));
+        // Note: init run in order they're defined in container!
+        for (const mgr of this.getManagers()) {
+            await mgr.init();
+        }
     }
 
     protected async runBuild() {

@@ -38,12 +38,13 @@ export class PagesManager {
             linkify: true,
             typographer: true,
         });
-        for (const customBlock of config.getOptions().customBlocks) {
+    }
+
+    async init() {
+        for (const customBlock of this.config.getOptions().customBlocks) {
             this.md.use(require('markdown-it-container'), customBlock);
         }
     }
-
-    init() {}
 
     async build() {
         const allPages = await this.getAllPages();

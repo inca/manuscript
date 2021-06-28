@@ -21,3 +21,15 @@ export interface Heading {
     level: number;
     text: string;
 }
+
+export interface StylesheetEntry {
+    name: string;
+    source?: string;
+    excluded?: boolean;
+}
+
+export interface ScriptEntry {
+    name: string;
+    source?: string;
+    excluded?: boolean;
+}

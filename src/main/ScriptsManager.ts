@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import { inject, injectable } from 'inversify';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 import { VueLoaderPlugin } from 'vue-loader';
 import { Compiler, Configuration, EntryObject, Stats, Watching, webpack } from 'webpack';
@@ -12,7 +11,7 @@ import { manager } from './manager';
 @injectable()
 @manager()
 export class ScriptsManager {
-    compiler: Compiler;
+    compiler: Compiler | null = null;
     watcher: Watching | null = null;
 
     constructor(
@@ -20,21 +19,20 @@ export class ScriptsManager {
         protected config: ConfigManager,
         @inject(EventBus)
         protected events: EventBus,
-    ) {
-        this.compiler = webpack(this.buildWebpackConfig());
-    }
+    ) {}
 
     init() {}
 
     async build() {
+        const compiler = this.createCompiler();
         await new Promise<void>((resolve, reject) => {
-            this.compiler.run((err, stats) => {
+            compiler.run((err, stats) => {
                 if (err) { reject(err); }
                 if (!stats) {
                     return;
                 }
                 this.logStats(stats);
-                this.compiler.close(err => {
+                compiler.close(err => {
                     if (err) { reject(err); }
                     resolve();
                 });
@@ -43,7 +41,8 @@ export class ScriptsManager {
     }
 
     watch() {
-        this.watcher = this.compiler.watch({
+        const compiler = this.createCompiler();
+        this.watcher = compiler.watch({
             ignored: ['**/node_modules']
         }, (err, stats) => {
             if (err) {
@@ -60,6 +59,10 @@ export class ScriptsManager {
                 }
             }
         });
+    }
+
+    protected createCompiler() {
+        return webpack(this.buildWebpackConfig());
     }
 
     protected logStats(stats: Stats) {
@@ -93,7 +96,7 @@ export class ScriptsManager {
             },
             resolve: {
                 alias: {
-                    vue$: 'vue/dist/vue.runtime.esm-bundler.js',
+                    vue$: 'vue/dist/vue.esm-bundler.js',
                     '@': this.config.scriptsDir,
                 },
                 extensions: ['.tsx', '.ts', '.js', '.vue'],
@@ -134,7 +137,8 @@ export class ScriptsManager {
                     {
                         test: /\.css$/,
                         use: [
-                            opts.isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+                            // opts.isProduction ? MiniCssExtractPlugin.loader : 'vue-style-loader',
+                            'vue-style-loader',
                             {
                                 loader: 'css-loader',
                                 options: {
@@ -148,16 +152,17 @@ export class ScriptsManager {
             },
             plugins: [
                 new VueLoaderPlugin() as any,
-                new MiniCssExtractPlugin(),
+                // new MiniCssExtractPlugin(),
             ]
         };
     }
 
     protected buildWebpackEntry(): EntryObject {
         const res: EntryObject = {};
-        for (const scriptFile of this.config.getOptions().scripts) {
-            const { dir, ext, name } = path.parse(scriptFile);
-            res[name] = ['./scripts', dir, name + ext].filter(Boolean).join('/');
+        for (const entry of this.config.getOptions().scripts) {
+            const name = entry.name.replace(/\.(js|ts)/gi, '');
+            const source = entry.source ?? entry.name;
+            res[name] = ['./scripts', source].filter(Boolean).join('/');
         }
         return res;
     }

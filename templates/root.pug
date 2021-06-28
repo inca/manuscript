@@ -13,8 +13,11 @@ html(lang=opts.lang)
         block stylesheets
             for link in opts.cssUrls
                 link(rel="stylesheet" href=link)
-            for filename in opts.stylesheets
-                link(rel="stylesheet" href=`/${filename}`)
+            for entry in opts.stylesheets
+                if !entry.excluded
+                    link(rel="stylesheet" href=`/${entry.name}.css`)
+            for entry in opts.extraStylesheets || []
+                link(rel="stylesheet" href=`/${entry.name}.css`)
 
         block meta
             block metaCharset
@@ -30,6 +33,9 @@ html(lang=opts.lang)
   body
     block body
     for script in opts.scripts
-        script(src=`/${script.replace(/\.ts$/g, '.js')}`)
+        if !script.excluded
+            script(src=`/${script.name}.js`)
+    for script in opts.extraScripts || []
+        script(src=`/${script.name}.js`)
     if !opts.isProduction
       script(defer src="/__dev__.js")

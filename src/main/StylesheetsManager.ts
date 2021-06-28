@@ -8,6 +8,7 @@ import PostCss from 'postcss';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
+import { StylesheetEntry } from './types';
 
 // eslint-disable-next-line import/no-commonjs
 const postCssPlugins = [require('postcss-import'), require('autoprefixer')];
@@ -49,16 +50,16 @@ export class StylesheetsManager {
         await Promise.all(promises);
     }
 
-    async buildStylesheet(filename: string) {
-        const srcFile = path.join(this.config.stylesheetsDir, filename);
-        const dstFile = path.join(this.config.distDir, filename);
+    protected async buildStylesheet(entry: StylesheetEntry) {
+        const srcFile = path.join(this.config.stylesheetsDir, entry.source ?? entry.name);
+        const dstFile = path.join(this.config.distDir, entry.name + '.css');
         const srcCss = await fs.promises.readFile(srcFile, 'utf-8');
         const result = await this.postcss.process(srcCss, {
             from: srcFile,
             to: dstFile,
         });
         await fs.promises.writeFile(dstFile, result.css, 'utf-8');
-        console.info('Built stylesheet', chalk.green(filename));
+        console.info('Built stylesheet', chalk.green(entry.name + '.css'));
     }
 
 }
