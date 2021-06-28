@@ -5,10 +5,11 @@ block append meta
 
 block content
     .page(class=opts.pageClass)
-        if (opts.sidenav && opts.sidenav.length)
-            .page-sidenav
-                for item in opts.sidenav
-                    a.page-sidenav-link(href=item.href)= item.title
+        if (opts.sidebar && opts.sidebar.length)
+            .sidebar
+                .sidebar-content
+                    for item in opts.sidebar
+                        a.sidebar-link(href=item.href)= item.title
         .page-content
             block pageContent
                 != page.html

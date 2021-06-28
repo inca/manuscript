@@ -1,5 +1,3 @@
 .navbar
-    != opts.navbarPrependHtml
     for link in opts.navbar
         a.navbar-link(href=link.href)= link.title
-    != opts.navbarAppendHtml
