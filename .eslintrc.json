@@ -1,6 +1,3 @@
 {
-    "extends": "@ubio/eslint-config",
-    "rules": {
-        "no-console": ["error", { "allow": ["warn", "info", "error"]}]
-    }
+    "extends": "@ubio/eslint-config"
 }
