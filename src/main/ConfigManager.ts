@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import glob from 'glob';
-import { inject, injectable } from 'inversify';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import copy from 'recursive-copy';
 import { promisify } from 'util';
@@ -38,19 +38,13 @@ export interface WorkspaceOptions {
 /**
  * Reads config options from `manuscript.yaml` and manages default directory layout.
  */
-@injectable()
 @manager()
 export class ConfigManager {
     protected options: WorkspaceOptions = this.getDefaultOptions();
 
-    constructor(
-        @inject('rootDir')
-        public rootDir: string,
-        @inject('optionOverrides')
-        protected optionOverrides: WorkspaceOptions,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {}
+    @dep({ key: 'rootDir' }) rootDir!: string;
+    @dep({ key: 'optionOverrides' }) optionOverrides!: WorkspaceOptions;
+    @dep() events!: EventBus;
 
     async init() {
         await this.createDirs();

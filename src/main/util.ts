@@ -7,7 +7,7 @@ import { Heading } from './types';
 export function isFileExistsSync(file: string) {
     try {
         return fs.statSync(file).isFile();
-    } catch (err) {
+    } catch (err: any) {
         if (err.code === 'ENOENT') {
             return false;
         }

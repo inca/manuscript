@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { inject, injectable } from 'inversify';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import { VueLoaderPlugin } from 'vue-loader';
 import { Compiler, Configuration, EntryObject, Stats, Watching, webpack } from 'webpack';
@@ -8,18 +8,14 @@ import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
 
-@injectable()
 @manager()
 export class ScriptsManager {
+
+    @dep() config!: ConfigManager;
+    @dep() events!: EventBus;
+
     compiler: Compiler | null = null;
     watcher: Watching | null = null;
-
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {}
 
     init() {}
 

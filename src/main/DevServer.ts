@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import http from 'http';
-import { inject, injectable } from 'inversify';
 import Koa from 'koa';
 import serveStatic from 'koa-static';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import ws from 'ws';
 
@@ -18,24 +18,16 @@ import { TemplateManager } from './TemplatesManager';
  * but doesn't actually involve building it entirely.
  * Instead it only serves the requested content on demand.
  */
-@injectable()
 export class DevServer {
+
+    @dep() config!: ConfigManager;
+    @dep() events!: EventBus;
+    @dep() templates!: TemplateManager;
+    @dep() pages!: PagesManager;
+
     wss: ws.Server | null = null;
     server: http.Server | null = null;
     koa: Koa | null = null;
-
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(EventBus)
-        protected events: EventBus,
-        @inject(TemplateManager)
-        protected templates: TemplateManager,
-        @inject(PagesManager)
-        protected pages: PagesManager,
-    ) {
-
-    }
 
     async serve(port: number) {
         this.koa = this.createKoa();

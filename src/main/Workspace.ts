@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { Container } from 'inversify';
+import { Mesh } from 'mesh-ioc';
 
 import { ConfigManager, WorkspaceOptions } from './ConfigManager';
 import { DevServer } from './DevServer';
@@ -16,27 +16,23 @@ import { TemplateManager } from './TemplatesManager';
  * The composition root.
  */
 export class Workspace {
-    container = new Container({ skipBaseClassChecks: true });
+    mesh = new Mesh('Workspace');
 
     constructor(public rootDir: string, optionOverrides: Partial<WorkspaceOptions> = {}) {
-        this.container.bind('rootDir').toConstantValue(rootDir);
-        this.container.bind('optionOverrides').toConstantValue(optionOverrides);
-        this.container.bind(ConfigManager).toSelf().inSingletonScope();
-        this.container.bind(DevServer).toSelf().inSingletonScope();
-        this.container.bind(EventBus).toSelf().inSingletonScope();
-        this.container.bind(PagesManager).toSelf().inSingletonScope();
-        this.container.bind(ScriptsManager).toSelf().inSingletonScope();
-        this.container.bind(StaticManager).toSelf().inSingletonScope();
-        this.container.bind(StylesheetsManager).toSelf().inSingletonScope();
-        this.container.bind(TemplateManager).toSelf().inSingletonScope();
-
-        for (const cl of managerClasses) {
-            this.container.bind('manager').toService(cl);
-        }
+        this.mesh.constant('rootDir', rootDir);
+        this.mesh.constant('optionOverrides', optionOverrides);
+        this.mesh.service(ConfigManager);
+        this.mesh.service(DevServer);
+        this.mesh.service(EventBus);
+        this.mesh.service(PagesManager);
+        this.mesh.service(ScriptsManager);
+        this.mesh.service(StaticManager);
+        this.mesh.service(StylesheetsManager);
+        this.mesh.service(TemplateManager);
     }
 
     getManagers(): ManagerService[] {
-        return this.container.getAll<ManagerService>('manager');
+        return [...managerClasses].map(_ => this.mesh.resolve(_));
     }
 
     async build() {
@@ -47,7 +43,7 @@ export class Workspace {
     async serve(port: number) {
         await this.runInit();
         await this.runWatch();
-        const devServer = this.container.get(DevServer);
+        const devServer = this.mesh.resolve(DevServer);
         await devServer.serve(port);
     }
 

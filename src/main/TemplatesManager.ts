@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import glob from 'glob';
-import { inject, injectable } from 'inversify';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import pug from 'pug';
 import { promisify } from 'util';
@@ -35,16 +35,11 @@ const defaultTemplatesDir = path.resolve(__dirname, '../../templates');
  * The layouts are composed in a way that allows for overriding each aspect using blocks.
  * See `root.pug` and `layout.pug` for details.
  */
-@injectable()
 @manager()
 export class TemplateManager {
 
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {}
+    @dep() config!: ConfigManager;
+    @dep() events!: EventBus;
 
     init() {}
 

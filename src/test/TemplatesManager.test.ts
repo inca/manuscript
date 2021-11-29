@@ -14,14 +14,14 @@ describe('TemplatesManager', () => {
                 const workspace = await createTestWorkspace([
                     ['templates/pages/foo.pug', 'Some page']
                 ]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const resolved = templates.resolveTemplate('@pages/foo.pug');
                 assert.ok(resolved?.startsWith(workspace.rootDir));
             });
 
             it('resolves bundled template if local does not exist', async () => {
                 const workspace = await createTestWorkspace([]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const resolved = templates.resolveTemplate('@layout.pug');
                 assert.ok(resolved?.startsWith(path.resolve(__dirname, '../..')));
             });
@@ -30,14 +30,14 @@ describe('TemplatesManager', () => {
                 const workspace = await createTestWorkspace([
                     ['templates/layout.pug', 'Some layout']
                 ]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const resolved = templates.resolveTemplate('@layout.pug');
                 assert.ok(resolved?.startsWith(workspace.rootDir));
             });
 
             it('resolves null if not found in any of the locations', async () => {
                 const workspace = await createTestWorkspace([]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const resolved = templates.resolveTemplate('@foo.pug');
                 assert.strictEqual(resolved, null);
             });
@@ -51,7 +51,7 @@ describe('TemplatesManager', () => {
                     ['templates/pages/foo.pug', 'Some page'],
                     ['templates/components/icon.pug', 'Some icon'],
                 ]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const source = templates.resolveTemplate('@pages/foo.pug')!;
                 const resolved = templates.resolveTemplate('../components/icon.pug', source)!;
                 assert.ok(resolved.startsWith(path.resolve(workspace.rootDir, 'templates/components')));
@@ -61,7 +61,7 @@ describe('TemplatesManager', () => {
                 const workspace = await createTestWorkspace([
                     ['templates/root.pug', 'Some root'],
                 ]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const source = templates.resolveTemplate('@layout.pug')!;
                 const resolved = templates.resolveTemplate('./root.pug', source)!;
                 assert.ok(resolved.startsWith(path.resolve(__dirname, '../../templates')));
@@ -71,7 +71,7 @@ describe('TemplatesManager', () => {
                 const workspace = await createTestWorkspace([
                     ['templates/foo.pug', 'Some page'],
                 ]);
-                const templates = workspace.container.get(TemplateManager);
+                const templates = workspace.mesh.resolve(TemplateManager);
                 const source = templates.resolveTemplate('@foo.pug')!;
                 const resolved = templates.resolveTemplate('./layout.pug', source);
                 assert.ok(resolved == null);

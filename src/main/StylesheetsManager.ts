@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
-import { inject, injectable } from 'inversify';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import PostCss from 'postcss';
 
@@ -16,17 +16,13 @@ const postCssPlugins = [require('postcss-import'), require('autoprefixer')];
 /**
  * Compiles/watches stylesheets using PostCSS.
  */
-@injectable()
 @manager()
 export class StylesheetsManager {
-    postcss = PostCss(postCssPlugins);
 
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {}
+    @dep() config!: ConfigManager;
+    @dep() events!: EventBus;
+
+    postcss = PostCss(postCssPlugins);
 
     async init() {
         await this.buildStylesheets();

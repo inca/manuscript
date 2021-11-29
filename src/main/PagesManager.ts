@@ -2,8 +2,8 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
-import { inject, injectable } from 'inversify';
 import Markdown from 'markdown-it';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import { promisify } from 'util';
 import Yaml from 'yaml';
@@ -18,21 +18,18 @@ import { extractHeadings, isFileExists, readFrontMatter } from './util';
 const globAsync = promisify(glob);
 
 @manager()
-@injectable()
 export class PagesManager {
+
+    @dep() config!: ConfigManager;
+    @dep() templates!: TemplateManager;
+    @dep() events!: EventBus;
+
     protected md: Markdown;
     // Caches the contents of `pages/**/index.yaml` files
     // Directory name is used as cache key, not the filename
     protected optionsFileCache: Map<string, any> = new Map();
 
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(TemplateManager)
-        protected templates: TemplateManager,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {
+    constructor() {
         this.md = new Markdown({
             html: true,
             linkify: true,

@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
-import { inject, injectable } from 'inversify';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import { promisify } from 'util';
 
@@ -15,16 +15,11 @@ const globAsync = promisify(glob);
 /**
  * Copies static assets at build time.
  */
-@injectable()
 @manager()
 export class StaticManager {
 
-    constructor(
-        @inject(ConfigManager)
-        protected config: ConfigManager,
-        @inject(EventBus)
-        protected events: EventBus,
-    ) {}
+    @dep() config!: ConfigManager;
+    @dep() events!: EventBus;
 
     init() {}
 
