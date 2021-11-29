@@ -32,7 +32,7 @@ export class Workspace {
     }
 
     getManagers(): ManagerService[] {
-        return [...managerClasses].map(_ => this.mesh.resolve(_));
+        return managerClasses.map(_ => this.mesh.resolve(_));
     }
 
     async build() {
@@ -48,7 +48,6 @@ export class Workspace {
     }
 
     protected async runInit() {
-        // Note: init run in order they're defined in container!
         for (const mgr of this.getManagers()) {
             await mgr.init();
         }

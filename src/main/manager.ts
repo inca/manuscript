@@ -1,4 +1,4 @@
-export const managerClasses = new Set<ManagerClass>();
+export const managerClasses: ManagerClass[] = [];
 
 export interface ManagerService {
     init(): void | Promise<void>;
@@ -12,6 +12,6 @@ export interface ManagerClass {
 
 export function manager() {
     return (target: ManagerClass) => {
-        managerClasses.add(target);
+        managerClasses.push(target);
     };
 }
