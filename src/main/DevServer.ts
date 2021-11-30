@@ -72,7 +72,7 @@ export class DevServer {
                 if (!page) {
                     return next();
                 }
-                const html = await this.pages.renderPage(page);
+                const html = await this.templates.renderPage(page);
                 if (html) {
                     ctx.type = 'text/html';
                     ctx.body = html;

@@ -10,6 +10,8 @@ import { promisify } from 'util';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
+import { PagesManager } from './PagesManager';
+import { Page } from './types';
 import { isFileExistsSync } from './util';
 
 const globAsync = promisify(glob);
@@ -38,12 +40,14 @@ const defaultTemplatesDir = path.resolve(__dirname, '../../templates');
 @manager()
 export class TemplateManager {
 
+    @dep() pages!: PagesManager;
     @dep() config!: ConfigManager;
     @dep() events!: EventBus;
 
     init() {}
 
     async build() {
+        await this.buildPages();
         await this.buildTemplatePages();
     }
 
@@ -59,6 +63,7 @@ export class TemplateManager {
     }
 
     async renderFile(file: string, data: any = {}): Promise<string> {
+        const pages = await this.pages.getAllPages();
         const { opts: optOverrides, ...restData } = data;
         const opts = { ...this.config.getOptions(), ...optOverrides };
         const res = pug.renderFile(file, {
@@ -72,6 +77,7 @@ export class TemplateManager {
                 }
             ],
             opts,
+            pages,
             ...restData,
         });
         return res;
@@ -104,6 +110,23 @@ export class TemplateManager {
             }
         }
         return null;
+    }
+
+    async buildPages() {
+        const allPages = await this.pages.getAllPages();
+        for (const page of allPages) {
+            const html = await this.renderPage(page);
+            await fs.promises.writeFile(page.targetFile, html);
+            console.info('Built page', chalk.green(page.id));
+        }
+    }
+
+    async renderPage(page: Page): Promise<string> {
+        const pageTemplate = this.resolveTemplate('@page.pug')!;
+        return await this.renderFile(pageTemplate, {
+            opts: { ...page.opts, title: page.title },
+            page,
+        });
     }
 
     async buildTemplatePages() {

@@ -11,7 +11,6 @@ import Yaml from 'yaml';
 import { ConfigManager } from './ConfigManager';
 import { EventBus } from './EventBus';
 import { manager } from './manager';
-import { TemplateManager } from './TemplatesManager';
 import { Page } from './types';
 import { extractHeadings, isFileExists, readFrontMatter } from './util';
 
@@ -21,13 +20,14 @@ const globAsync = promisify(glob);
 export class PagesManager {
 
     @dep() config!: ConfigManager;
-    @dep() templates!: TemplateManager;
     @dep() events!: EventBus;
 
     protected md: Markdown;
-    // Caches the contents of `pages/**/index.yaml` files
+    // Cache pageId -> Page
+    protected pageCache = new Map<string, Page>();
+    // Cache the contents of `pages/**/index.yaml` files
     // Directory name is used as cache key, not the filename
-    protected optionsFileCache: Map<string, any> = new Map();
+    protected optionsFileCache = new Map<string, any>();
 
     constructor() {
         this.md = new Markdown({
@@ -43,14 +43,7 @@ export class PagesManager {
         }
     }
 
-    async build() {
-        const allPages = await this.getAllPages();
-        for (const page of allPages) {
-            const html = await this.renderPage(page);
-            await fs.writeFile(page.targetFile, html);
-            console.info('Built page', chalk.green(page.id));
-        }
-    }
+    async build() {}
 
     watch() {
         chokidar.watch(`${this.config.pagesDir}/**/index.yaml`)
@@ -62,17 +55,10 @@ export class PagesManager {
         chokidar.watch(`${this.config.pagesDir}/**/*.md`)
             .on('change', file => {
                 const pageId = this.normalizeId(path.relative(this.config.pagesDir, file));
+                this.pageCache.delete(pageId);
                 console.info(chalk.yellow('watch'), 'page changed', pageId);
                 this.events.emit('watch', { type: 'pageChanged', pageId });
             });
-    }
-
-    async renderPage(page: Page): Promise<string> {
-        const pageTemplate = this.templates.resolveTemplate('@page.pug')!;
-        return await this.templates.renderFile(pageTemplate, {
-            opts: { ...page.opts, title: page.title },
-            page,
-        });
     }
 
     async getAllPages(): Promise<Page[]> {
@@ -83,6 +69,10 @@ export class PagesManager {
 
     async getPage(id: string): Promise<Page | null> {
         id = this.normalizeId(id);
+        const existing = this.pageCache.get(id);
+        if (existing) {
+            return existing;
+        }
         const sourceFile = await this.getSourceFile(id);
         if (!sourceFile) {
             return null;
@@ -98,7 +88,7 @@ export class PagesManager {
         const html = this.md.render(text);
         const headings = extractHeadings(html);
         const title = headings[0]?.text;
-        return {
+        const page: Page = {
             id,
             title,
             sourceFile,
@@ -108,6 +98,8 @@ export class PagesManager {
             headings,
             opts,
         };
+        this.pageCache.set(id, page);
+        return page;
     }
 
     protected async getSourceFile(id: string) {
