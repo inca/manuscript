@@ -136,7 +136,7 @@ export class PagesManager {
             const opts = Yaml.parse(content);
             this.optionsFileCache.set(optionsFile, opts);
             return opts;
-        } catch (err) {
+        } catch (err: any) {
             if (err.code !== 'ENOENT') {
                 console.warn(`Could not read ${optionsFile}`, err.message);
             }

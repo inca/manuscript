@@ -30,6 +30,7 @@ export interface WorkspaceOptions {
     navbar: Link[];
     logoImage: string;
     logoTitle: string;
+    logoSize: number;
     title?: string;
     customBlocks: string[];
     [key: string]: any;
@@ -138,6 +139,7 @@ export class ConfigManager {
             navbar: [],
             logoImage: '/logo.png',
             logoTitle: 'My Awesome Website',
+            logoSize: 48,
             stylesheets: [
                 { name: 'index.css' },
             ],

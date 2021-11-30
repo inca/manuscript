@@ -12,8 +12,8 @@ export interface Page {
     text: string;
     html: string;
     headings: Heading[];
-    sourceFile: string,
-    targetFile: string,
+    sourceFile: string;
+    targetFile: string;
     opts: WorkspaceOptions;
 }
 
