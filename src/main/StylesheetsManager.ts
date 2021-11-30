@@ -10,8 +10,13 @@ import { EventBus } from './EventBus';
 import { manager } from './manager';
 import { StylesheetEntry } from './types';
 
-// eslint-disable-next-line import/no-commonjs
-const postCssPlugins = [require('postcss-import'), require('autoprefixer')];
+/* eslint-disable import/no-commonjs */
+const postCssPlugins = [
+    require('postcss-import'),
+    require('postcss-nested'),
+    require('autoprefixer'),
+];
+/* eslint-enable import/no-commonjs */
 
 /**
  * Compiles/watches stylesheets using PostCSS.

@@ -1,3 +1,4 @@
 a.sitelogo(href="/")
-    img.sitelogo-image(src=opts.logoImage width=48 height=48 alt="")
+    if opts.logoImage
+        img.sitelogo-image(src=opts.logoImage width=48 height=48 alt="")
     span.sitelogo-title!= opts.logoTitle
