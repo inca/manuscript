@@ -1,0 +1,28 @@
+html, body, img {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+html, body {
+    color: var(--text-color);
+    fill: var(--text-color);
+    background: var(--background-color);
+
+    font-size: var(--font-size);
+    font-family: var(--font-family);
+    line-height: 1.5;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-alt);
+}
+
+a {
+    color: var(--link-color);
+}

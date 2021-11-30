@@ -1,0 +1,25 @@
+.container {
+    margin: 0 auto;
+    max-width: var(--container-width);
+    box-sizing: border-box;
+
+    padding: .5rem 1rem;
+}
+
+.header, .footer {
+    position: relative;
+    font-family: var(--font-family-alt);
+}
+
+.header-container {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.header-main {
+    flex: 1;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
