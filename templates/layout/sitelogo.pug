@@ -1,4 +1,10 @@
 a.sitelogo(href="/")
     if opts.logoImage
-        img.sitelogo-image(src=opts.logoImage width=opts.logoSize height=opts.logoSize alt=opts.siteTitle)
+        img.sitelogo-image(
+            src=opts.logoImage
+            width=opts.logoSize
+            height=opts.logoSize
+            alt=opts.siteTitle
+            title=opts.siteTitle
+        )
     span.sitelogo-title!= opts.logoTitle
