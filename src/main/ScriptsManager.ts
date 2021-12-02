@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { dep } from 'mesh-ioc';
 import path from 'path';
+import TerserPlugin from 'terser-webpack-plugin';
 import { VueLoaderPlugin } from 'vue-loader';
 import { Compiler, Configuration, EntryObject, Stats, Watching, webpack } from 'webpack';
 
@@ -149,7 +150,18 @@ export class ScriptsManager {
             plugins: [
                 new VueLoaderPlugin() as any,
                 // new MiniCssExtractPlugin(),
-            ]
+            ],
+            optimization: {
+                minimize: true,
+                minimizer: [
+                    new TerserPlugin({
+                        terserOptions: {
+                            keep_classnames: true,
+                            keep_fnames: true,
+                        },
+                    }),
+                ],
+            },
         };
     }
 
