@@ -116,6 +116,7 @@ export class TemplateManager {
         const allPages = await this.pages.getAllPages();
         for (const page of allPages) {
             const html = await this.renderPage(page);
+            await fs.promises.mkdir(path.dirname(page.targetFile), { recursive: true });
             await fs.promises.writeFile(page.targetFile, html);
             console.info('Built page', chalk.green(page.id));
         }
