@@ -13,7 +13,7 @@ const program = new Command()
 program.command('dev')
     .description('Start dev server')
     .option('-r, --root <root>', 'Root directory', process.cwd())
-    .option('-p, --port <port>', 'Port', 5000)
+    .option('-p, --port <port>', 'Port', 8888)
     .action(opts => {
         const workspace = new Workspace(opts.root);
         workspace.serve(opts.port);
