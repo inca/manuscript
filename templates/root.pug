@@ -29,7 +29,7 @@ html(lang=opts.lang)
             block metaThemeColor
                 meta(name="theme-color" content=opts.themeColor)
                 meta(name="apple-mobile-web-app-status-bar-style" content=opts.themeColor)
-        = opts.appendHead || ''
+        != opts.appendHead || ''
   body
     block body
     block bodyScripts
@@ -40,4 +40,4 @@ html(lang=opts.lang)
             script(src=`/${script.name}.js`)
         if !opts.isProduction
         script(defer src="/__dev__.js")
-    = opts.appendBody || ''
+    != opts.appendBody || ''
