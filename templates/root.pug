@@ -29,13 +29,15 @@ html(lang=opts.lang)
             block metaThemeColor
                 meta(name="theme-color" content=opts.themeColor)
                 meta(name="apple-mobile-web-app-status-bar-style" content=opts.themeColor)
-
+        = opts.appendHead || ''
   body
     block body
-    for script in opts.scripts
-        if !script.excluded
+    block bodyScripts
+        for script in opts.scripts
+            if !script.excluded
+                script(src=`/${script.name}.js`)
+        for script in opts.extraScripts || []
             script(src=`/${script.name}.js`)
-    for script in opts.extraScripts || []
-        script(src=`/${script.name}.js`)
-    if !opts.isProduction
-      script(defer src="/__dev__.js")
+        if !opts.isProduction
+        script(defer src="/__dev__.js")
+    = opts.appendBody || ''

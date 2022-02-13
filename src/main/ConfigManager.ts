@@ -33,6 +33,8 @@ export interface WorkspaceOptions {
     logoSize: number;
     title?: string;
     customBlocks: string[];
+    appendHead?: string;
+    appendBody?: string;
     [key: string]: any;
 }
 
