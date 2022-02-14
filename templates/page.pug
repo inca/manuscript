@@ -5,11 +5,5 @@ block append meta
 
 block content
     .page(class=opts.pageClass)
-        if (opts.sidebar && opts.sidebar.length)
-            .sidebar
-                .sidebar-content
-                    for item in opts.sidebar
-                        a.sidebar-link(href=item.href)= item.title
-        .page-content
-            block pageContent
-                != page.html
+        include @layout/sidebar
+        include @page/content

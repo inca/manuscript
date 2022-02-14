@@ -1,0 +1,5 @@
+if (opts.sidebar && opts.sidebar.length)
+    .sidebar
+        .sidebar-content
+            for item in opts.sidebar
+                a.sidebar-link(href=item.href)= item.title
