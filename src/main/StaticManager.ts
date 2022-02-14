@@ -36,7 +36,10 @@ export class StaticManager {
     }
 
     async copyStaticFiles() {
-        const files = await globAsync('**/*', { cwd: this.config.staticDir });
+        const files = await globAsync('**/*', {
+            cwd: this.config.staticDir,
+            nodir: true,
+        });
         const promises = files.map(async f => {
             const srcFile = path.join(this.config.staticDir, f);
             const targetFile = path.join(this.config.distDir, f);
