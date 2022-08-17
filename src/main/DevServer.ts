@@ -107,15 +107,15 @@ function devClientScript() {
     function connectDev() {
         const ws = new WebSocket(`ws://${location.host}`);
 
-        ws.onclose = function() {
+        ws.onclose = function () {
             setTimeout(connectDev, 500);
         };
 
-        ws.onopen = function() {
+        ws.onopen = function () {
             console.info('Connected to dev server');
         };
 
-        ws.onmessage = function(ev: MessageEvent) {
+        ws.onmessage = function (ev: MessageEvent) {
             const payload = JSON.parse(ev.data);
             switch (payload.type) {
                 case 'cssChanged':
@@ -129,7 +129,7 @@ function devClientScript() {
             }
         };
 
-        ws.onerror = function(ev) {
+        ws.onerror = function (ev) {
             ev.preventDefault();
             ev.stopPropagation();
             return false;
