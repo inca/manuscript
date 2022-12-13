@@ -6,9 +6,9 @@ import glob from 'glob';
 import path from 'path';
 import { promisify } from 'util';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { manager } from './manager';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
 
 const globAsync = promisify(glob);
 

@@ -2,15 +2,15 @@ import 'reflect-metadata';
 
 import { Mesh } from '@nodescript/mesh';
 
-import { ConfigManager, WorkspaceOptions } from './ConfigManager';
-import { DevServer } from './DevServer';
-import { EventBus } from './EventBus';
-import { managerClasses, ManagerService } from './manager';
-import { PagesManager } from './PagesManager';
-import { ScriptsManager } from './ScriptsManager';
-import { StaticManager } from './StaticManager';
-import { StylesheetsManager } from './StylesheetsManager';
-import { TemplateManager } from './TemplatesManager';
+import { ConfigManager, WorkspaceOptions } from './ConfigManager.js';
+import { DevServer } from './DevServer.js';
+import { EventBus } from './EventBus.js';
+import { managerClasses, ManagerService } from './manager.js';
+import { PagesManager } from './PagesManager.js';
+import { ScriptsManager } from './ScriptsManager.js';
+import { StaticManager } from './StaticManager.js';
+import { StylesheetsManager } from './StylesheetsManager.js';
+import { TemplateManager } from './TemplatesManager.js';
 
 /**
  * The composition root.

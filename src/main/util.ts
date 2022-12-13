@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import fs from 'fs';
 import Yaml from 'yaml';
 
-import { Heading } from './types';
+import { Heading } from './types.js';
 
 export function isFileExistsSync(file: string) {
     try {

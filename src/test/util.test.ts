@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { readFrontMatter } from '../main/util';
+import { readFrontMatter } from '../main/util.js';
 
 describe('util', () => {
 

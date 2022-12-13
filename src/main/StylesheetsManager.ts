@@ -3,20 +3,22 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import path from 'path';
-import PostCss from 'postcss';
+import { default as PostCss } from 'postcss';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { manager } from './manager';
-import { StylesheetEntry } from './types';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
+import { StylesheetEntry } from './types.js';
 
-/* eslint-disable import/no-commonjs */
+const { default: postCssImport } = await import('postcss-import');
+const { default: postCssNested } = await import('postcss-nested');
+const { default: autoprefixer } = await import('autoprefixer');
+
 const postCssPlugins = [
-    require('postcss-import'),
-    require('postcss-nested'),
-    require('autoprefixer'),
+    postCssImport,
+    postCssNested,
+    autoprefixer,
 ];
-/* eslint-enable import/no-commonjs */
 
 /**
  * Compiles/watches stylesheets using PostCSS.
@@ -27,7 +29,7 @@ export class StylesheetsManager {
     @dep() config!: ConfigManager;
     @dep() events!: EventBus;
 
-    postcss = PostCss(postCssPlugins);
+    postcss = (PostCss as any)(postCssPlugins);
 
     async init() {
         await this.buildStylesheets();

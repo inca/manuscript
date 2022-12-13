@@ -3,19 +3,21 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import glob from 'glob';
-import path from 'path';
+import path, { dirname } from 'path';
 import pug from 'pug';
+import { fileURLToPath } from 'url';
 import { promisify } from 'util';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { manager } from './manager';
-import { PagesManager } from './PagesManager';
-import { Page } from './types';
-import { isFileExistsSync } from './util';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
+import { PagesManager } from './PagesManager.js';
+import { Page } from './types.js';
+import { isFileExistsSync } from './util.js';
 
 const globAsync = promisify(glob);
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const defaultTemplatesDir = path.resolve(__dirname, '../../templates');
 
 /**

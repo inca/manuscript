@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-const { Command } = require('commander');
-const fs = require('fs');
-const path = require('path');
+import { Command } from 'commander';
+import fs from 'fs';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const { Workspace } = require('./out/main/Workspace');
+import { Workspace } from './out/main/Workspace.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, './package.json'), 'utf-8'));
 

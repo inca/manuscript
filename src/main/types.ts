@@ -1,4 +1,4 @@
-import { WorkspaceOptions } from './ConfigManager';
+import { WorkspaceOptions } from './ConfigManager.js';
 
 export interface Link {
     title: string;

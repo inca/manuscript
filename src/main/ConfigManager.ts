@@ -3,15 +3,17 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import glob from 'glob';
-import path from 'path';
-import copy from 'recursive-copy';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { promisify } from 'util';
 import Yaml from 'yaml';
 
-import { EventBus } from './EventBus';
-import { manager } from './manager';
-import { Link, ScriptEntry, StylesheetEntry } from './types';
-import { clone, isFileExistsSync } from './util';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
+import { Link, ScriptEntry, StylesheetEntry } from './types.js';
+import { clone, isFileExistsSync } from './util.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const globAsync = promisify(glob);
 
@@ -163,7 +165,7 @@ export class ConfigManager {
             if (exists) {
                 continue;
             }
-            await copy(sourceFile, targetFile, { overwrite: false });
+            await fs.promises.cp(sourceFile, targetFile, { force: false, recursive: true });
             console.info('Created', chalk.green(filename));
         }
     }

@@ -1,8 +1,8 @@
 import assert from 'assert';
 import path from 'path';
 
-import { TemplateManager } from '../main/TemplatesManager';
-import { createTestWorkspace } from './helpers';
+import { TemplateManager } from '../main/TemplatesManager.js';
+import { createTestWorkspace } from './helpers.js';
 
 describe('TemplatesManager', () => {
 

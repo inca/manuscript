@@ -1,21 +1,24 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "moduleResolution": "node",
         "target": "ES2020",
+        "module": "ESNext",
+        "moduleResolution": "NodeNext",
         "strict": true,
         "skipLibCheck": true,
+        "sourceMap": true,
         "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "composite": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "composite": true,
+        "noImplicitOverride": true,
+        "allowSyntheticDefaultImports": true,
         "allowJs": true,
         "checkJs": false,
         "lib": [
             "DOM",
-            "ES2019"
+            "ES2020"
         ],
-
         "rootDir": "src",
         "outDir": "out",
     },

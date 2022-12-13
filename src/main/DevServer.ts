@@ -6,10 +6,10 @@ import serveStatic from 'koa-static';
 import path from 'path';
 import ws from 'ws';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { PagesManager } from './PagesManager';
-import { TemplateManager } from './TemplatesManager';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { PagesManager } from './PagesManager.js';
+import { TemplateManager } from './TemplatesManager.js';
 
 /**
  * An http server for development.

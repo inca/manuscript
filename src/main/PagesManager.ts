@@ -4,15 +4,16 @@ import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
 import Markdown from 'markdown-it';
+import markdownItContainer from 'markdown-it-container';
 import path from 'path';
 import { promisify } from 'util';
 import Yaml from 'yaml';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { manager } from './manager';
-import { Page } from './types';
-import { extractHeadings, isFileExists, readFrontMatter } from './util';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
+import { Page } from './types.js';
+import { extractHeadings, isFileExists, readFrontMatter } from './util.js';
 
 const globAsync = promisify(glob);
 
@@ -39,7 +40,7 @@ export class PagesManager {
 
     async init() {
         for (const customBlock of this.config.getOptions().customBlocks) {
-            this.md.use(require('markdown-it-container'), customBlock);
+            this.md.use(markdownItContainer, customBlock);
         }
     }
 

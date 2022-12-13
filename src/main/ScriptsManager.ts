@@ -1,14 +1,17 @@
 import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
-import path from 'path';
+import path, { dirname } from 'path';
 import ResolveTypescriptPlugin from 'resolve-typescript-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
+import { fileURLToPath } from 'url';
 import { VueLoaderPlugin } from 'vue-loader';
-import { Compiler, Configuration, EntryObject, Stats, Watching, webpack } from 'webpack';
+import webpack, { Compiler, Configuration, EntryObject, Stats, Watching } from 'webpack';
 
-import { ConfigManager } from './ConfigManager';
-import { EventBus } from './EventBus';
-import { manager } from './manager';
+import { ConfigManager } from './ConfigManager.js';
+import { EventBus } from './EventBus.js';
+import { manager } from './manager.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 @manager()
 export class ScriptsManager {
