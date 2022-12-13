@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { Mesh } from 'mesh-ioc';
+import { Mesh } from '@nodescript/mesh';
 
 import { ConfigManager, WorkspaceOptions } from './ConfigManager';
 import { DevServer } from './DevServer';

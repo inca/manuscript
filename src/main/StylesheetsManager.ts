@@ -1,7 +1,7 @@
+import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
-import { dep } from 'mesh-ioc';
 import path from 'path';
 import PostCss from 'postcss';
 

@@ -1,5 +1,5 @@
+import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
-import { dep } from 'mesh-ioc';
 import path from 'path';
 import ResolveTypescriptPlugin from 'resolve-typescript-plugin';
 import TerserPlugin from 'terser-webpack-plugin';

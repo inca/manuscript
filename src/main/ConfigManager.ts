@@ -1,8 +1,8 @@
+import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import fs from 'fs';
 import glob from 'glob';
-import { dep } from 'mesh-ioc';
 import path from 'path';
 import copy from 'recursive-copy';
 import { promisify } from 'util';

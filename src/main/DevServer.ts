@@ -1,8 +1,8 @@
+import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
 import http from 'http';
 import Koa from 'koa';
 import serveStatic from 'koa-static';
-import { dep } from 'mesh-ioc';
 import path from 'path';
 import ws from 'ws';
 
