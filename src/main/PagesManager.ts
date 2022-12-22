@@ -1,10 +1,10 @@
-import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
 import Markdown from 'markdown-it';
 import markdownItContainer from 'markdown-it-container';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import { promisify } from 'util';
 import Yaml from 'yaml';

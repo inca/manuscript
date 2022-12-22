@@ -1,8 +1,8 @@
-import { dep } from '@nodescript/mesh';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import { promises as fs } from 'fs';
 import glob from 'glob';
+import { dep } from 'mesh-ioc';
 import path from 'path';
 import { promisify } from 'util';
 
