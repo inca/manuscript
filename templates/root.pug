@@ -32,7 +32,7 @@ html(lang=opts.lang)
         != opts.appendHead || ''
   body
     block body
-    block bodyScripts
+    block scripts
         for script in opts.scripts
             if !script.excluded
                 script(src=`/${script.name}.js`)
